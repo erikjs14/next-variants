@@ -1,7 +1,8 @@
 name: update_data
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "15 0,3,6,12,18 * * *"
+    - cron: "15 0,6,12,18 * * *"
 jobs:
   plot:
     runs-on: ubuntu-latest
