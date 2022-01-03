@@ -202,7 +202,7 @@ sdps.append({
 })
 
 one_week = (date.today() + timedelta(7)).strftime('%Y-%m-%d')
-one_week_idx = data_fit[data_fit.date == today].index.item()
+one_week_idx = data_fit[data_fit.date == one_week].index.item()
 two_weeks = (date.today() + timedelta(14)).strftime('%Y-%m-%d')
 two_weeks_idx = data_fit[data_fit.date == two_weeks].index.item()
 sdps.append({
