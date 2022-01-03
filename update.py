@@ -208,7 +208,18 @@ two_weeks_idx = data_fit[data_fit.date == two_weeks].index.item()
 sdps.append({
     'label': 'Projektion Omikron Fallzahlen in 14 Tagen',
     'value': round(data_fit[data_fit.date == two_weeks].omicron_abs_fit.iloc[0]),
-    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen. 7-Tage-Inzidenz: ' + str(round((data_fit.new_cases_smoothed_fit.iloc[one_week_idx:two_weeks_idx+1].sum()/83240000)*100000, 2))
+    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen.'
+})
+sdps.append({
+    'label': 'Projektion Delta Fallzahlen in 14 Tagen',
+    'value': round(data_fit[data_fit.date == two_weeks].delta_abs_fit.iloc[0]),
+    'hint': 'Projektion für Delta-Fallzahlen in 14 Tagen.'
+})
+
+sdps.append({
+    'label': 'Projektion 7-Tage-Inzidenz in 14 Tagen',
+    'value': str(round((data_fit.new_cases_smoothed_fit.iloc[one_week_idx:two_weeks_idx+1].sum()/83240000)*100000, 2)),
+    'hint': '',
 })
 
 cur_idx = data_fit[data_fit.date == (date.today() - timedelta(1)).strftime('%Y-%m-%d')].index[0]
