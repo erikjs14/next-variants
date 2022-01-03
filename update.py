@@ -193,12 +193,12 @@ sdps.append({
 dft = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')]
 sdps.append({
     'label': 'Nowcast Anteil Omikron',
-    'value': round(dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0], 4),
+    'value': '{:.2f}%'.format(dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
     'hint': 'Projektion Anteil Omikron heute'
 })
 sdps.append({
     'label': 'Nowcast Anteil Delta',
-    'value': round(dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0], 4),
+    'value': '{:.2f}%'.format(dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
     'hint': 'Projektion Anteil Delta heute'
 })
 
