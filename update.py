@@ -177,6 +177,16 @@ sdps.append({
     'value': owid_data_ger.reproduction_rate.dropna().iloc[-1],
     'hint': 'R-Wert gesamt'
 })
+sdps.append({
+    'label': '7-Tage-Inzidenz',
+    'value': '{:.2f}'.format(owid_data_ger.iloc[-1].new_cases_smoothed_per_million/10 * 7),
+    'hint': 'Inzidenz mit Stand ' + owid_data_ger.iloc[-1].date
+})
+sdps.append({
+    'label': 'Neue Fälle gestern',
+    'value': int(owid_data_ger.iloc[-1].new_cases),
+    'hint': 'Neue gemeldete Fälle gestern, ' + owid_data_ger.iloc[-1].date
+})
 
 # Share of variants
 sdps.append({
@@ -193,12 +203,12 @@ sdps.append({
 dft = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')]
 sdps.append({
     'label': 'Nowcast Anteil Omikron',
-    'value': '{:.2f}%'.format(dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
+    'value': '{:.2f}%'.format(100 * dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
     'hint': 'Projektion Anteil Omikron heute'
 })
 sdps.append({
     'label': 'Nowcast Anteil Delta',
-    'value': '{:.2f}%'.format(dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
+    'value': '{:.2f}%'.format(100 * dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
     'hint': 'Projektion Anteil Delta heute'
 })
 
