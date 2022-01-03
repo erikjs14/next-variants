@@ -180,14 +180,26 @@ sdps.append({
 
 # Share of variants
 sdps.append({
-    'label': 'Anteil Omikron',
+    'label': 'Anteil Omikron (' + str(agg_data_rolling.iloc[-1].date) + ')',
     'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].omicron_rel*100),
     'hint': '3-Tagesdurchschnitt des relativen Anteils der Omikron-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
 })
 sdps.append({
-    'label': 'Anteil Delta',
+    'label': 'Anteil Delta (' + str(agg_data_rolling.iloc[-1].date) + ')',
     'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].delta_rel*100),
     'hint': '3-Tagesdurchschnitt des relativen Anteils der Delta-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
+})
+
+dft = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')]
+sdps.append({
+    'label': 'Nowcast Anteil Omikron',
+    'value': round(dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0], 4),
+    'hint': 'Projektion Anteil Omikron heute'
+})
+sdps.append({
+    'label': 'Nowcast Anteil Delta',
+    'value': round(dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0], 4),
+    'hint': 'Projektion Anteil Delta heute'
 })
 
 sdps.append({
