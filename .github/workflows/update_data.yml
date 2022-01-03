@@ -1,0 +1,23 @@
+name: update_data
+on:
+  schedule:
+    - cron: "15 0,3,6,12,18 * * *"
+jobs:
+  plot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
+      - run: pip install -r requirements.txt
+      - run: python update.py
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Data update
+          file_pattern: data/*
