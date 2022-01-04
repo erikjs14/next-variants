@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   Heading,
@@ -32,6 +32,14 @@ export default function Home(props) {
 
   const [accForecastDays, setAccForecastDays] = useState(14);
   const [accShowActualCases, setAccShowActualCases] = useState(true);
+
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    setPhone(window.matchMedia('(max-width: 768px)'));
+    window
+      .matchMedia('(max-width: 768px)')
+      .addEventListener('change', e => setPhone(e.matches));
+  }, []);
 
   const ogcData = useMemo(
     () =>
@@ -152,6 +160,7 @@ export default function Home(props) {
             border="1px solid #bbb"
             borderRadius={4}
             padding={4}
+            maxWidth="80vw"
           >
             <Heading size={400} marginBottom={4}>
               {label}
@@ -183,12 +192,23 @@ export default function Home(props) {
       </Heading>
 
       {/* Omicron Growth Chart (OGC) */}
-      <Card elevation={3} padding={16} paddingX={32} margin={64}>
+      <Card
+        elevation={3}
+        paddingY={16}
+        paddingX={phone ? 4 : 32}
+        margin={!phone && 64}
+        marginY={phone ? 32 : 64}
+      >
         <Heading textAlign="center" size={500} marginBottom={32}>
           Omikron Fälle
         </Heading>
 
-        <Pane display="flex" justifyContent="flex-end">
+        <Pane
+          display="flex"
+          justifyContent={'flex-end'}
+          alignItems={'center'}
+          flexDirection={phone ? 'column' : 'row'}
+        >
           <Text display="flex" alignItems="center" justifyContent="flex-end">
             Linear
             <Switch
@@ -204,6 +224,7 @@ export default function Home(props) {
             alignItems="center"
             justifyContent="flex-end"
             marginLeft={32}
+            marginTop={phone && 8}
           >
             Bis Heute
             <Switch
@@ -216,15 +237,15 @@ export default function Home(props) {
           </Text>
         </Pane>
 
-        <ResponsiveContainer width="100%" height={500}>
+        <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
           <ComposedChart
-            width={800}
-            height={500}
+            width={1000}
+            height={phone ? 400 : 500}
             margin={{
               top: 20,
-              right: 20,
+              right: 10,
               bottom: 20,
-              left: 20,
+              left: 0,
             }}
             data={ogcData}
           >
@@ -239,13 +260,17 @@ export default function Home(props) {
               allowDataOverflow
               ticks={ogcLogit ? [0.01, 0.1, 0.5, 0.9, 0.99, 1] : []}
             />
-            <ZAxis dataKey="sum" type="number" range={[30, 200]} />
+            <ZAxis
+              dataKey="sum"
+              type="number"
+              range={phone ? [10, 80] : [30, 200]}
+            />
             <ChartTooltip content={CustomTooltip('ogc')} />
             <Legend
-              layout="horizontal"
+              layout={phone ? 'vertical' : 'horizontal'}
               align="center"
               verticalAlign="bottom"
-              wrapperStyle={{ position: 'relative' }}
+              wrapperStyle={!phone && { position: 'relative' }}
               formatter={val => {
                 return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
               }}
@@ -257,13 +282,26 @@ export default function Home(props) {
       </Card>
 
       {/* Absolute Case Chart */}
-      <Card elevation={3} padding={16} paddingX={32} margin={64}>
+      <Card
+        elevation={3}
+        paddingY={16}
+        paddingX={phone ? 4 : 32}
+        margin={!phone && 64}
+        marginY={phone ? 32 : 64}
+      >
         <Heading textAlign="center" size={500} marginBottom={32}>
           Absoloute Fälle [pro Tag]
         </Heading>
 
-        <Pane display="flex" justifyContent="flex-end" alignItems="center">
-          <Text marginRight={16}>Projektion [Tage]</Text>
+        <Pane
+          display="flex"
+          justifyContent="flex-end"
+          alignItems="center"
+          flexDirection={phone ? 'column' : 'row'}
+        >
+          <Text marginRight={!phone && 16} marginBottom={phone && 8}>
+            Projektion [Tage]
+          </Text>
           <Tablist>
             {[0, 7, 14, 21, 28].map(days => (
               <Tab
@@ -278,7 +316,12 @@ export default function Home(props) {
           </Tablist>
         </Pane>
 
-        <Pane display="flex" justifyContent="flex-end" alignItems="center">
+        <Pane
+          display="flex"
+          justifyContent={phone ? 'center' : 'flex-end'}
+          marginY={phone && 8}
+          alignItems="center"
+        >
           <Checkbox
             checked={accShowActualCases}
             onChange={e => setAccShowActualCases(e.target.checked)}
@@ -286,21 +329,22 @@ export default function Home(props) {
           <Text marginLeft={16}>Tatsächlich gemeldete Fallzahlen</Text>
         </Pane>
 
-        <ResponsiveContainer width="100%" height={500}>
+        <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
           <ComposedChart
             width={800}
-            height={500}
+            height={phone ? 400 : 500}
             margin={{
               top: 20,
-              right: 20,
+              right: 10,
               bottom: 20,
-              left: 20,
+              left: 0,
             }}
             data={accData}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
+            {phone && <ZAxis range={[15, 15]} />}
             <ChartTooltip content={CustomTooltip('acc')} />
             <Legend
               layout="horizontal"
@@ -324,6 +368,7 @@ export default function Home(props) {
             <Scatter
               dataKey="omicron_abs"
               fill="#8884d8"
+              size
               fillOpacity={accOpacity['omicron_abs']}
             />
             <Scatter
@@ -356,7 +401,7 @@ export default function Home(props) {
               dataKey="new_cases_smoothed_fit"
               dot={false}
               activeDot={false}
-              strokeWidth={3}
+              strokeWidth={phone ? 2 : 3}
               stroke="#700036"
               strokeOpacity={accOpacity['new_cases_smoothed_fit']}
             />
@@ -364,7 +409,13 @@ export default function Home(props) {
         </ResponsiveContainer>
       </Card>
 
-      <Card elevation={3} padding={16} paddingX={32} margin={64}>
+      <Card
+        elevation={3}
+        paddingY={16}
+        paddingX={phone ? 4 : 32}
+        margin={!phone && 64}
+        marginY={phone ? 32 : 64}
+      >
         <Heading textAlign="center" size={500} marginBottom={32}>
           Bullets
         </Heading>
@@ -372,8 +423,10 @@ export default function Home(props) {
         <Pane
           display="flex"
           justifyContent="space-evenly"
-          alignItems="center"
-          flexWrap="wrap"
+          alignItems={phone ? 'stretch' : 'center'}
+          flexWrap={!phone && 'wrap'}
+          flexDirection={phone ? 'column' : 'row'}
+          paddingX={phone && 16}
         >
           {props.sdps.map(sdp => (
             <Card
@@ -386,7 +439,7 @@ export default function Home(props) {
               alignItems="center"
               flexBasis="26%"
               position="relative"
-              marginBottom={8}
+              marginBottom={phone ? 16 : 8}
             >
               <Heading
                 is="h4"
