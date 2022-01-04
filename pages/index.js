@@ -198,6 +198,7 @@ export default function Home(props) {
         paddingX={phone ? 4 : 32}
         margin={!phone ? 64 : undefined}
         marginY={phone ? 32 : 64}
+        paddingBottom={phone ? 32 : 16}
       >
         <Heading textAlign="center" size={500} marginBottom={32}>
           Omikron Fälle
@@ -270,7 +271,10 @@ export default function Home(props) {
               layout={phone ? 'vertical' : 'horizontal'}
               align="center"
               verticalAlign="bottom"
-              wrapperStyle={!phone ? { position: 'relative' } : undefined}
+              wrapperStyle={{
+                position: 'relative',
+                paddingLeft: phone ? 30 : undefined,
+              }}
               formatter={val => {
                 return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
               }}
