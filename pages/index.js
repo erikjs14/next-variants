@@ -439,12 +439,16 @@ export default function Home(props) {
               <ReferenceLine
                 stroke="orange"
                 strokeWidth={3}
-                strokeOpacity={1}
-                label={{
-                  value: 'Extrapolation',
-                  position: 'top',
-                  fill: 'orange',
-                }}
+                strokeOpacity={accForecastDays > 0 ? 1 : 0}
+                label={
+                  accForecastDays > 0
+                    ? {
+                        value: 'Extrapolation',
+                        position: 'top',
+                        fill: 'orange',
+                      }
+                    : ''
+                }
                 segment={[
                   { x: props.aggData[props.aggData.length - 1].date, y: 0 },
                   { x: accData[accData.length - 1].date, y: 0 },
