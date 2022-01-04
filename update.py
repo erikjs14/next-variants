@@ -181,9 +181,9 @@ sdps = []
 
 # Reproduction Rate alltogether
 sdps.append({
-    'label': 'Reproduktionsrate',
+    'label': 'R-Wert (' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date) + ')',
     'value': owid_data_ger.reproduction_rate.dropna().iloc[-1],
-    'hint': 'R-Wert gesamt'
+    'hint': 'Kann nur nachhängig gemessen werden. R-Wert gesamt vom ' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date)
 })
 sdps.append({
     'label': '7-Tage-Inzidenz',
