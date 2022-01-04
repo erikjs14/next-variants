@@ -35,7 +35,7 @@ export default function Home(props) {
 
   const [phone, setPhone] = useState(false);
   useEffect(() => {
-    setPhone(window.matchMedia('(max-width: 768px)'));
+    setPhone(window.matchMedia('(max-width: 768px)').matches);
     window
       .matchMedia('(max-width: 768px)')
       .addEventListener('change', e => setPhone(e.matches));
@@ -196,7 +196,7 @@ export default function Home(props) {
         elevation={3}
         paddingY={16}
         paddingX={phone ? 4 : 32}
-        margin={!phone && 64}
+        margin={!phone ? 64 : undefined}
         marginY={phone ? 32 : 64}
       >
         <Heading textAlign="center" size={500} marginBottom={32}>
@@ -224,7 +224,7 @@ export default function Home(props) {
             alignItems="center"
             justifyContent="flex-end"
             marginLeft={32}
-            marginTop={phone && 8}
+            marginTop={phone ? 8 : undefined}
           >
             Bis Heute
             <Switch
@@ -270,7 +270,7 @@ export default function Home(props) {
               layout={phone ? 'vertical' : 'horizontal'}
               align="center"
               verticalAlign="bottom"
-              wrapperStyle={!phone && { position: 'relative' }}
+              wrapperStyle={!phone ? { position: 'relative' } : undefined}
               formatter={val => {
                 return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
               }}
@@ -286,7 +286,7 @@ export default function Home(props) {
         elevation={3}
         paddingY={16}
         paddingX={phone ? 4 : 32}
-        margin={!phone && 64}
+        margin={!phone ? 64 : undefined}
         marginY={phone ? 32 : 64}
       >
         <Heading textAlign="center" size={500} marginBottom={32}>
@@ -299,7 +299,10 @@ export default function Home(props) {
           alignItems="center"
           flexDirection={phone ? 'column' : 'row'}
         >
-          <Text marginRight={!phone && 16} marginBottom={phone && 8}>
+          <Text
+            marginRight={!phone ? 16 : undefined}
+            marginBottom={phone ? 8 : undefined}
+          >
             Projektion [Tage]
           </Text>
           <Tablist>
@@ -319,7 +322,7 @@ export default function Home(props) {
         <Pane
           display="flex"
           justifyContent={phone ? 'center' : 'flex-end'}
-          marginY={phone && 8}
+          marginY={phone ? 8 : undefined}
           alignItems="center"
         >
           <Checkbox
@@ -413,7 +416,7 @@ export default function Home(props) {
         elevation={3}
         paddingY={16}
         paddingX={phone ? 4 : 32}
-        margin={!phone && 64}
+        margin={!phone ? 64 : undefined}
         marginY={phone ? 32 : 64}
       >
         <Heading textAlign="center" size={500} marginBottom={32}>
@@ -424,9 +427,9 @@ export default function Home(props) {
           display="flex"
           justifyContent="space-evenly"
           alignItems={phone ? 'stretch' : 'center'}
-          flexWrap={!phone && 'wrap'}
+          flexWrap={!phone ? 'wrap' : undefined}
           flexDirection={phone ? 'column' : 'row'}
-          paddingX={phone && 16}
+          paddingX={phone ? 16 : undefined}
         >
           {props.sdps.map(sdp => (
             <Card
@@ -465,6 +468,28 @@ export default function Home(props) {
           ))}
         </Pane>
       </Card>
+
+      <Pane margin={!phone ? 64 : undefined} paddingX={phone ? 4 : 0}>
+        <Heading>Quellen</Heading>
+        <Text display="block">
+          <a
+            href="https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland"
+            target="_blank"
+            rel="noreferrer"
+          >
+            https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland
+          </a>
+        </Text>
+        <Text display="block">
+          <a
+            href="https://github.com/owid/covid-19-data/tree/master/public/data"
+            target="_blank"
+            rel="noreferrer"
+          >
+            https://github.com/owid/covid-19-data/tree/master/public/data
+          </a>
+        </Text>
+      </Pane>
     </Pane>
   );
 }
