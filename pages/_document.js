@@ -31,11 +31,7 @@ export default class MyDocument extends Document {
           <style dangerouslySetInnerHTML={{ __html: css }} />
         </Head>
 
-        <body
-          style={{
-            backgroundColor: '#F3F6FF',
-          }}
-        >
+        <body>
           <Main />
           {hydrationScript}
           <NextScript />

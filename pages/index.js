@@ -7,6 +7,9 @@ import {
   Text,
   Tooltip,
   InfoSignIcon,
+  Tablist,
+  Tab,
+  Checkbox,
 } from 'evergreen-ui';
 import csv from 'csvtojson';
 import {
@@ -15,7 +18,6 @@ import {
   ComposedChart,
   Line,
   Scatter,
-  ScatterChart,
   XAxis,
   YAxis,
   ZAxis,
@@ -25,6 +27,9 @@ import {
 export default function Home(props) {
   const [ogcLogit, setOgcLogit] = useState(false);
   const [ogcFit, setOgcFit] = useState(false);
+
+  const [accForecastDays, setAccForecastDays] = useState(14);
+  const [accShowActualCases, setAccShowActualCases] = useState(true);
 
   const ogcData = useMemo(
     () =>
@@ -57,6 +62,22 @@ export default function Home(props) {
     [ogcFit, props.aggData, props.projectionOmicronGrowth],
   );
 
+  const accData = useMemo(
+    () =>
+      props.projection
+        .slice(0, props.projection.length - (28 - accForecastDays))
+        .map(d => ({
+          date: d.date,
+          omicron_abs: d.omicron_abs || undefined,
+          delta_abs: d.delta_abs || undefined,
+          omicron_abs_fit: d.omicron_abs_fit,
+          delta_abs_fit: d.delta_abs_fit,
+          new_cases_smoothed_fit: d.new_cases_smoothed_fit,
+          new_cases_smoothed: d.new_cases_smoothed || undefined,
+        })),
+    [accForecastDays, props.projection],
+  );
+
   return (
     <Pane marginTop={32}>
       <Heading is="h1" textAlign="center" size={900}>
@@ -64,7 +85,7 @@ export default function Home(props) {
       </Heading>
 
       {/* Omicron Growth Chart (OGC) */}
-      <Card elevation={1} padding={16} paddingX={32} margin={64}>
+      <Card elevation={3} padding={16} paddingX={32} margin={64}>
         <Heading textAlign="center" size="500" marginBottom={32}>
           Omikron Fälle
         </Heading>
@@ -128,7 +149,81 @@ export default function Home(props) {
         </ResponsiveContainer>
       </Card>
 
-      <Card elevation={1} padding={16} paddingX={32} margin={64}>
+      {/* Absolute Case Chart */}
+      <Card elevation={3} padding={16} paddingX={32} margin={64}>
+        <Heading textAlign="center" size="500" marginBottom={32}>
+          Absoloute Fälle [pro Tag]
+        </Heading>
+
+        <Pane display="flex" justifyContent="flex-end" alignItems="center">
+          <Text marginRight={16}>Projektion [Tage]</Text>
+          <Tablist>
+            {[0, 7, 14, 21, 28].map(days => (
+              <Tab
+                key={days}
+                id={days}
+                onSelect={() => setAccForecastDays(days)}
+                isSelected={days === accForecastDays}
+              >
+                {days}
+              </Tab>
+            ))}
+          </Tablist>
+        </Pane>
+
+        <Pane display="flex" justifyContent="flex-end" alignItems="center">
+          <Checkbox
+            checked={accShowActualCases}
+            onChange={e => setAccShowActualCases(e.target.checked)}
+          />
+          <Text marginLeft={16}>Tatsächlich gemeldete Fallzahlen</Text>
+        </Pane>
+
+        <ResponsiveContainer width="100%" height={500}>
+          <ComposedChart
+            width={800}
+            height={500}
+            margin={{
+              top: 20,
+              right: 20,
+              bottom: 20,
+              left: 20,
+            }}
+            data={accData}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <ChartTooltip />
+            <Scatter dataKey="omicron_abs" fill="#2f00c9" />
+            <Scatter dataKey="delta_abs" fill="#dbbe00" />
+            {accShowActualCases && (
+              <Scatter dataKey="new_cases_smoothed" fill="#700036" />
+            )}
+            <Line
+              dataKey="omicron_abs_fit"
+              dot={false}
+              activeDot={false}
+              stroke="#2f00c9"
+            />
+            <Line
+              dataKey="delta_abs_fit"
+              dot={false}
+              activeDot={false}
+              stroke="#505c00"
+            />
+            <Line
+              dataKey="new_cases_smoothed_fit"
+              dot={false}
+              activeDot={false}
+              strokeWidth={3}
+              stroke="#700036"
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </Card>
+
+      <Card elevation={3} padding={16} paddingX={32} margin={64}>
         <Heading textAlign="center" size="500" marginBottom={32}>
           Bullets
         </Heading>
@@ -187,11 +282,12 @@ export async function getStaticProps(context) {
     await csv({ checkType: true }).fromFile(filename);
 
   const aggData = await readCsv('data/agg_data.csv');
+  const projection = await readCsv('data/projection.csv');
   //const aggDataRolling = await readCsv('data/agg_data_rolling.csv');
   const projectionOmicronGrowth = await readCsv('data/growth_fit/omicron.csv');
   const sdps = await JSON.parse(fs.readFileSync('data/sdps.json'));
 
   return {
-    props: { aggData, projectionOmicronGrowth, sdps },
+    props: { aggData, projectionOmicronGrowth, sdps, projection },
   };
 }

@@ -135,7 +135,7 @@ abs_data
 
 from functools import partial
 
-forecast_days = 40
+forecast_days = 28
 
 delta_abs_fit, popt_daf = fit(abs_data, 'delta_abs', partial(sigmoid, max=abs_data.delta_abs.max()), add_days=forecast_days, method='dogbox')
 
@@ -149,7 +149,15 @@ abs_data_fit = pd.concat([abs_data_fit, omicron_abs_fit[['fit']].rename({'fit': 
 abs_data_fit['new_cases_smoothed_fit'] = abs_data_fit['delta_abs_fit'] + abs_data_fit['omicron_abs_fit']
 abs_data_fit.loc[len(abs_data.index):, 'date'] = pd.date_range(abs_data.iloc[-1].date, periods=forecast_days+1)[1:].map(lambda d: d.strftime('%Y-%m-%d'))
 
-abs_data_fit = abs_data_fit.join(omicron_growth_fit.set_index('date').rename({'fit': 'omicron_rel_fit'}, axis=1), on='date', how='left')
+# abs_data_fit = abs_data_fit.join(omicron_growth_fit.set_index('date').rename({'fit': 'omicron_rel_fit'}, axis=1), on='date', how='left')
+abs_data_fit['omicron_rel_fit'] = abs_data_fit.omicron_abs_fit / abs_data_fit.new_cases_smoothed_fit
+abs_data_fit['delta_rel_fit'] = abs_data_fit.delta_abs_fit / abs_data_fit.new_cases_smoothed_fit
+
+for _, row in owid_data_ger.iterrows():
+  if row.date in abs_data_fit.date.unique():
+    idx = abs_data_fit[abs_data_fit.date == row.date].index.item()
+    abs_data_fit.loc[idx, 'new_cases_smoothed'] = row.new_cases_smoothed
+
 data_fit = abs_data_fit
 
 abs_data_fit
