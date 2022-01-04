@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import React, { useState, useMemo } from 'react';
 import {
   Card,
@@ -22,6 +23,7 @@ import {
   YAxis,
   ZAxis,
   Tooltip as ChartTooltip,
+  Legend,
 } from 'recharts';
 
 export default function Home(props) {
@@ -61,6 +63,15 @@ export default function Home(props) {
         })),
     [ogcFit, props.aggData, props.projectionOmicronGrowth],
   );
+  const ogcLabelMap = useMemo(
+    () => ({
+      date: 'Datum',
+      omicron_rel: 'Omikron [relativ]',
+      sum: 'Anzahl Sequenzierungen',
+      fit: 'Modelliertes Wachstum',
+    }),
+    [],
+  );
 
   const accData = useMemo(
     () =>
@@ -77,6 +88,93 @@ export default function Home(props) {
         })),
     [accForecastDays, props.projection],
   );
+  const accLabelMap = useMemo(
+    () => ({
+      date: 'Datum',
+      omicron_abs: 'Omikron [tatsächlich, absolut]',
+      delta_abs: 'Delta [tatsächlich, absolut]',
+      omicron_abs_fit: 'Omikron [modelliert, absolut]',
+      delta_abs_fit: 'Delta [modelliert, absolut]',
+      new_cases_smoothed:
+        '7-Tage Mittel tägl. Neuinfektionen [tatsächlich, absolut]',
+      new_cases_smoothed_fit:
+        '7-Tage Mittel tägl. Neuinfektionen [modelliert, absolut]',
+    }),
+    [],
+  );
+  const [accOpacity, setAccOpacity] = useState(
+    (() => {
+      const init = {};
+      for (let key of Object.keys(accLabelMap)) {
+        init[key] = 1;
+      }
+      return init;
+    })(),
+  );
+  const handleMouseEnter = o => {
+    setAccOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 0.5 : 0.1,
+    }));
+  };
+  const handleMouseLeave = o => {
+    setAccOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 1 : 0.1,
+    }));
+  };
+  const handleClick = o => {
+    setAccOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 0.1 : 0.5,
+    }));
+  };
+
+  const CustomTooltip =
+    type =>
+    ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+        let pl = payload;
+        if (type === 'ogc') {
+          const plOr = payload.find(p => p.dataKey === 'omicron_rel');
+          pl = payload.concat({
+            color: plOr.color,
+            name: 'sum',
+            value: plOr.payload.sum,
+            noDec: true,
+          });
+        }
+        const labelMap =
+          type === 'ogc' ? ogcLabelMap : type === 'acc' ? accLabelMap : {};
+        return (
+          <Pane
+            backgroundColor="#fff"
+            border="1px solid #bbb"
+            borderRadius={4}
+            padding={4}
+          >
+            <Heading size={400} marginBottom={4}>
+              {label}
+            </Heading>
+            {pl.map(d => (
+              <Pane
+                key={d.name}
+                display="flex"
+                justifyContent="space-between"
+                color={d.color}
+              >
+                <Text color="inherit">{labelMap[d.name] || d.name}:</Text>
+                <Text color="inherit" marginLeft={16} fontFamily="mono">
+                  {d.value.toFixed(d.noDec ? 0 : type === 'ogc' ? 6 : 2)}
+                </Text>
+              </Pane>
+            ))}
+          </Pane>
+        );
+      }
+
+      return null;
+    };
 
   return (
     <Pane marginTop={32}>
@@ -86,7 +184,7 @@ export default function Home(props) {
 
       {/* Omicron Growth Chart (OGC) */}
       <Card elevation={3} padding={16} paddingX={32} margin={64}>
-        <Heading textAlign="center" size="500" marginBottom={32}>
+        <Heading textAlign="center" size={500} marginBottom={32}>
           Omikron Fälle
         </Heading>
 
@@ -142,16 +240,25 @@ export default function Home(props) {
               ticks={ogcLogit ? [0.01, 0.1, 0.5, 0.9, 0.99, 1] : []}
             />
             <ZAxis dataKey="sum" type="number" range={[30, 200]} />
-            <ChartTooltip />
+            <ChartTooltip content={CustomTooltip('ogc')} />
+            <Legend
+              layout="horizontal"
+              align="center"
+              verticalAlign="bottom"
+              wrapperStyle={{ position: 'relative' }}
+              formatter={val => {
+                return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
+              }}
+            />
             <Scatter dataKey="omicron_rel" fill="#8884d8" />
-            <Line dataKey="fit" dot={false} activeDot={false} />
+            <Line dataKey="fit" dot={false} activeDot={false} fill="#3182bd" />
           </ComposedChart>
         </ResponsiveContainer>
       </Card>
 
       {/* Absolute Case Chart */}
       <Card elevation={3} padding={16} paddingX={32} margin={64}>
-        <Heading textAlign="center" size="500" marginBottom={32}>
+        <Heading textAlign="center" size={500} marginBottom={32}>
           Absoloute Fälle [pro Tag]
         </Heading>
 
@@ -194,23 +301,56 @@ export default function Home(props) {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
-            <ChartTooltip />
-            <Scatter dataKey="omicron_abs" fill="#2f00c9" />
-            <Scatter dataKey="delta_abs" fill="#dbbe00" />
+            <ChartTooltip content={CustomTooltip('acc')} />
+            <Legend
+              layout="horizontal"
+              align="center"
+              verticalAlign="bottom"
+              formatter={val => {
+                return (
+                  <Text
+                    opacity={accOpacity[val]}
+                    color="inherit"
+                    cursor="pointer"
+                  >
+                    {accLabelMap[val] || val}
+                  </Text>
+                );
+              }}
+              onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            />
+            <Scatter
+              dataKey="omicron_abs"
+              fill="#8884d8"
+              fillOpacity={accOpacity['omicron_abs']}
+            />
+            <Scatter
+              dataKey="delta_abs"
+              fill="#dbbe00"
+              fillOpacity={accOpacity['delta_abs']}
+            />
             {accShowActualCases && (
-              <Scatter dataKey="new_cases_smoothed" fill="#700036" />
+              <Scatter
+                dataKey="new_cases_smoothed"
+                fill="#700036"
+                fillOpacity={accOpacity['new_cases_smoothed']}
+              />
             )}
             <Line
               dataKey="omicron_abs_fit"
               dot={false}
               activeDot={false}
-              stroke="#2f00c9"
+              stroke="#8884d8"
+              strokeOpacity={accOpacity['omicron_abs_fit']}
             />
             <Line
               dataKey="delta_abs_fit"
               dot={false}
               activeDot={false}
-              stroke="#505c00"
+              stroke="#dbbe00"
+              strokeOpacity={accOpacity['delta_abs_fit']}
             />
             <Line
               dataKey="new_cases_smoothed_fit"
@@ -218,13 +358,14 @@ export default function Home(props) {
               activeDot={false}
               strokeWidth={3}
               stroke="#700036"
+              strokeOpacity={accOpacity['new_cases_smoothed_fit']}
             />
           </ComposedChart>
         </ResponsiveContainer>
       </Card>
 
       <Card elevation={3} padding={16} paddingX={32} margin={64}>
-        <Heading textAlign="center" size="500" marginBottom={32}>
+        <Heading textAlign="center" size={500} marginBottom={32}>
           Bullets
         </Heading>
 
