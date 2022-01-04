@@ -252,10 +252,11 @@ sdps.append({
     'hint': '',
 })
 
-cur_idx = data_fit[data_fit.date == (date.today() - timedelta(1)).strftime('%Y-%m-%d')].index[0]
+cur_idx = 0
 last_cases = data_fit.loc[cur_idx, 'new_cases_smoothed_fit']
 cur_idx += 1
 while cur_idx <= data_fit.index.max() and last_cases >= data_fit.loc[cur_idx, 'new_cases_smoothed_fit']:
+  last_cases = data_fit.loc[cur_idx, 'new_cases_smoothed_fit']
   cur_idx += 1
 
 if cur_idx <= data_fit.index.max():
