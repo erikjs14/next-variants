@@ -25,6 +25,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from 'recharts';
+import Image from 'next/image';
 
 export default function Home(props) {
   const [ogcLogit, setOgcLogit] = useState(false);
@@ -187,8 +188,18 @@ export default function Home(props) {
 
   return (
     <Pane marginTop={32}>
-      <Heading is="h1" textAlign="center" size={900}>
-        Omikron Tracker
+      <Heading
+        is="h1"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        size={900}
+      >
+        <Image src="/icon-512x512.png" width={42} height={42} alt="Logo" />
+        <span style={{ display: 'inline-block', marginLeft: '1rem' }}>
+          {' '}
+          Omikron Tracker
+        </span>
       </Heading>
 
       {/* Omicron Growth Chart (OGC) */}

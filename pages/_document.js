@@ -28,6 +28,10 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          <link rel="icon" type="image/png" href="/icon-256x256.png" />
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="apple-touch-icon" href="/icon-512x512.png"></link>
+          <meta name="theme-color" content="#8884d8" />
           <style dangerouslySetInnerHTML={{ __html: css }} />
         </Head>
 
