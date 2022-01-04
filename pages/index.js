@@ -24,6 +24,7 @@ import {
   ZAxis,
   Tooltip as ChartTooltip,
   Legend,
+  ReferenceLine,
 } from 'recharts';
 import Image from 'next/image';
 
@@ -40,6 +41,18 @@ export default function Home(props) {
     window
       .matchMedia('(max-width: 768px)')
       .addEventListener('change', e => setPhone(e.matches));
+  }, []);
+
+  const [todayStr, setTodayStr] = useState(null);
+  useEffect(() => {
+    const d = new Date();
+    setTodayStr(
+      d.getFullYear() +
+        '-' +
+        (d.getMonth() + 1).toString().padStart(2, '0') +
+        '-' +
+        d.getDate().toString().padStart(2, '0'),
+    );
   }, []);
 
   const ogcData = useMemo(
@@ -60,7 +73,14 @@ export default function Home(props) {
                     props.aggData[props.aggData.length - 1].date,
                   ).getTime(),
               )
-            : [],
+            : props.projectionOmicronGrowth.filter(
+                d =>
+                  new Date(d.date).getTime() >=
+                    new Date(
+                      props.aggData[props.aggData.length - 1].date,
+                    ).getTime() &&
+                  new Date(d.date).getTime() <= new Date().getTime(),
+              ),
         )
         .map(d => ({
           date: d.date,
@@ -146,12 +166,14 @@ export default function Home(props) {
         let pl = payload;
         if (type === 'ogc') {
           const plOr = payload.find(p => p.dataKey === 'omicron_rel');
-          pl = payload.concat({
-            color: plOr.color,
-            name: 'sum',
-            value: plOr.payload.sum,
-            noDec: true,
-          });
+          if (plOr) {
+            pl = payload.concat({
+              color: plOr.color,
+              name: 'sum',
+              value: plOr.payload.sum,
+              noDec: true,
+            });
+          }
         }
         const labelMap =
           type === 'ogc' ? ogcLabelMap : type === 'acc' ? accLabelMap : {};
@@ -290,6 +312,20 @@ export default function Home(props) {
                 return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
               }}
             />
+            {todayStr && (
+              <ReferenceLine
+                x={todayStr}
+                stroke="black"
+                strokeWidth={2}
+                strokeOpacity={ogcFit ? 0.25 : 0}
+                strokeDasharray={'15 5'}
+                label={
+                  ogcFit
+                    ? { value: 'Heute', position: 'top', opacity: 0.25 }
+                    : ''
+                }
+              />
+            )}
             <Scatter dataKey="omicron_rel" fill="#8884d8" />
             <Line dataKey="fit" dot={false} activeDot={false} fill="#3182bd" />
           </ComposedChart>
@@ -383,6 +419,38 @@ export default function Home(props) {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             />
+            {todayStr && (
+              <ReferenceLine
+                x={todayStr}
+                stroke="black"
+                strokeWidth={2}
+                strokeOpacity={
+                  accData[accData.length - 1].date > todayStr ? 0.25 : 0
+                }
+                strokeDasharray={'15 5'}
+                label={
+                  accData[accData.length - 1].date > todayStr
+                    ? { value: 'Heute', position: 'top', opacity: 0.25 }
+                    : ''
+                }
+              />
+            )}
+            {todayStr && (
+              <ReferenceLine
+                stroke="orange"
+                strokeWidth={3}
+                strokeOpacity={1}
+                label={{
+                  value: 'Extrapolation',
+                  position: 'top',
+                  fill: 'orange',
+                }}
+                segment={[
+                  { x: props.aggData[props.aggData.length - 1].date, y: 0 },
+                  { x: accData[accData.length - 1].date, y: 0 },
+                ]}
+              />
+            )}
             <Scatter
               dataKey="omicron_abs"
               fill="#8884d8"
