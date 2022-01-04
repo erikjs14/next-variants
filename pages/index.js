@@ -318,7 +318,7 @@ export default function Home(props) {
                 stroke="black"
                 strokeWidth={2}
                 strokeOpacity={ogcFit ? 0.25 : 0}
-                strokeDasharray={'15 5'}
+                strokeDasharray={'15 4'}
                 label={
                   ogcFit
                     ? { value: 'Heute', position: 'top', opacity: 0.25 }
@@ -427,7 +427,7 @@ export default function Home(props) {
                 strokeOpacity={
                   accData[accData.length - 1].date > todayStr ? 0.25 : 0
                 }
-                strokeDasharray={'15 5'}
+                strokeDasharray={'15 4'}
                 label={
                   accData[accData.length - 1].date > todayStr
                     ? { value: 'Heute', position: 'top', opacity: 0.25 }
