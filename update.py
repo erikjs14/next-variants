@@ -226,30 +226,53 @@ sdps.append({
     'hint': 'Projektion für Omikron-Anteil > 50%'
 })
 sdps.append({
+    'label': 'Projektion Omikron 90%',
+    'value': project_omicron_above(0.9, popt_ogf),
+    'hint': 'Projektion für Omikron-Anteil > 90%'
+})
+sdps.append({
     'label': 'Projektion Omikron 95%',
     'value': project_omicron_above(0.95, popt_ogf),
     'hint': 'Projektion für Omikron-Anteil > 95%'
 })
+sdps.append({
+    'label': 'Projektion Omikron 99%',
+    'value': project_omicron_above(0.99, popt_ogf),
+    'hint': 'Projektion für Omikron-Anteil > 99%'
+})
 
+today_idx = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')].index.item()
 one_week = (date.today() + timedelta(7)).strftime('%Y-%m-%d')
 one_week_idx = data_fit[data_fit.date == one_week].index.item()
 two_weeks = (date.today() + timedelta(14)).strftime('%Y-%m-%d')
 two_weeks_idx = data_fit[data_fit.date == two_weeks].index.item()
+three_weeks = (date.today() + timedelta(21)).strftime('%Y-%m-%d')
+three_weeks_idx = data_fit[data_fit.date == three_weeks].index.item()
 sdps.append({
     'label': 'Projektion Omikron Fallzahlen in 14 Tagen',
     'value': round(data_fit[data_fit.date == two_weeks].omicron_abs_fit.iloc[0]),
-    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen.'
+    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.'
 })
 sdps.append({
     'label': 'Projektion Delta Fallzahlen in 14 Tagen',
     'value': round(data_fit[data_fit.date == two_weeks].delta_abs_fit.iloc[0]),
-    'hint': 'Projektion für Delta-Fallzahlen in 14 Tagen.'
+    'hint': 'Projektion für Delta-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.'
 })
 
 sdps.append({
+    'label': 'Projektion 7-Tage-Inzidenz in 7 Tagen',
+    'value': str(round((data_fit.new_cases_smoothed_fit.iloc[today_idx:one_week_idx+1].sum()/83240000)*100000, 2)),
+    'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[one_week_idx], 100 * data_fit.omicron_rel_fit.iloc[one_week_idx])
+})
+sdps.append({
     'label': 'Projektion 7-Tage-Inzidenz in 14 Tagen',
     'value': str(round((data_fit.new_cases_smoothed_fit.iloc[one_week_idx:two_weeks_idx+1].sum()/83240000)*100000, 2)),
-    'hint': '',
+    'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[two_weeks_idx], 100 * data_fit.omicron_rel_fit.iloc[two_weeks_idx]),
+})
+sdps.append({
+    'label': 'Projektion 7-Tage-Inzidenz in 21 Tagen',
+    'value': str(round((data_fit.new_cases_smoothed_fit.iloc[two_weeks_idx:three_weeks_idx+1].sum()/83240000)*100000, 2)),
+    'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[three_weeks_idx], 100 * data_fit.omicron_rel_fit.iloc[three_weeks_idx])
 })
 
 cur_idx = 0
