@@ -16,7 +16,7 @@ meta_file = 'meta.csv'
 lineage = pd.read_csv(lineage_file)
 meta = pd.read_csv(meta_file)
 data = pd.merge(lineage, meta, left_on='IMS_ID', right_on='IMS_ID', how='left')
-data = data[data.SEQ_REASON.isin(['N'])] # filter for random samples
+data = data[data.SEQ_REASON.isin(['N', 'X'])] # filter for random samples
 
 sdps = [] # single data points
 
