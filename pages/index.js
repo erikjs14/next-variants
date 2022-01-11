@@ -68,14 +68,14 @@ export default function Home(props) {
           ogcFit
             ? props.projectionOmicronGrowth.filter(
                 d =>
-                  new Date(d.date).getTime() >=
+                  new Date(d.date).getTime() >
                   new Date(
                     props.aggData[props.aggData.length - 1].date,
                   ).getTime(),
               )
             : props.projectionOmicronGrowth.filter(
                 d =>
-                  new Date(d.date).getTime() >=
+                  new Date(d.date).getTime() >
                     new Date(
                       props.aggData[props.aggData.length - 1].date,
                     ).getTime() &&
@@ -321,7 +321,13 @@ export default function Home(props) {
                 strokeDasharray={'15 5'}
                 label={
                   ogcFit
-                    ? { value: 'Heute', position: 'top', opacity: 0.25 }
+                    ? {
+                        value: `Heute (${ogcData
+                          .find(d => todayStr === d.date)
+                          ?.fit.toFixed(2)})`,
+                        position: 'top',
+                        opacity: 0.25,
+                      }
                     : ''
                 }
               />
