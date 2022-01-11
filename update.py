@@ -212,12 +212,12 @@ dft = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')]
 sdps.append({
     'label': 'Nowcast Anteil Omikron',
     'value': '{:.2f}%'.format(100 * dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
-    'hint': 'Projektion Anteil Omikron heute'
+    'hint': 'Projektion Anteil Omikron heute. Berechnet über relative Häufigkeit der Wachstumsprognose der absoluten Zahlen (daher Unterschied zur reinen sigmoiden relativen Wachstumsmodellierung oben).'
 })
 sdps.append({
     'label': 'Nowcast Anteil Delta',
     'value': '{:.2f}%'.format(100 * dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
-    'hint': 'Projektion Anteil Delta heute'
+    'hint': 'Projektion Anteil Delta heute. Berechnet über relative Häufigkeit der Wachstumsprognose der absoluten Zahlen.'
 })
 
 sdps.append({
