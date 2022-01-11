@@ -11,6 +11,7 @@ import {
   Tablist,
   Tab,
   Checkbox,
+  Paragraph,
 } from 'evergreen-ui';
 import csv from 'csvtojson';
 import {
@@ -234,7 +235,7 @@ export default function Home(props) {
         paddingBottom={phone ? 32 : 16}
       >
         <Heading textAlign="center" size={500} marginBottom={32}>
-          Omikron Fälle
+          Omikron Fälle [rel]
         </Heading>
 
         <Pane
@@ -336,6 +337,23 @@ export default function Home(props) {
             <Line dataKey="fit" dot={false} activeDot={false} fill="#3182bd" />
           </ComposedChart>
         </ResponsiveContainer>
+
+        <Paragraph
+          lineHeight={1.2}
+          maxWidth={1024}
+          paddingX={phone ? 8 : 64}
+          marginTop={phone ? 64 : 32}
+          textAlign={phone ? 'justify' : 'left'}
+          marginX="auto"
+        >
+          Dargestellt sind die relativen Häufigkeiten der Omikron Variante
+          (inkl. aller Subtypen), wie vom RKI im Rahmen der repräsentativen
+          Surveillance berichtet. Die Größe der Kreise repräsentiert die Anzahl
+          der Sequenzierungen dieses Tages. <br />
+          Die durchgezogene Linie stellt die reine mathematische Modellierung
+          dieses Wachstums anhand einer Sigmoid-Funktion dar. Die Extrapolation
+          betrachtet keinerlei externe Faktoren.
+        </Paragraph>
       </Card>
 
       {/* Absolute Case Chart */}
