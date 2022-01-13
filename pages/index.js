@@ -61,7 +61,6 @@ export default function Home(props) {
       props.aggData
         .filter(
           d =>
-            d.sum >= 10 &&
             new Date(d.date).getTime() >= new Date('2021-11-15').getTime() &&
             d.omicron_rel > 0,
         )
