@@ -41,7 +41,7 @@ export default function Home(props) {
   const [ogcFit, setOgcFit] = useState(false);
 
   const [accForecastDays, setAccForecastDays] = useState(14);
-  const [accShowActualCases, setAccShowActualCases] = useState(true);
+  const [accShowModeledCases, setAccShowModeledCases] = useState(true);
 
   const [phone, setPhone] = useState(false);
   useEffect(() => {
@@ -438,10 +438,10 @@ export default function Home(props) {
           alignItems="center"
         >
           <Checkbox
-            checked={accShowActualCases}
-            onChange={e => setAccShowActualCases(e.target.checked)}
+            checked={accShowModeledCases}
+            onChange={e => setAccShowModeledCases(e.target.checked)}
           />
-          <Text marginLeft={16}>Tatsächlich gemeldete Fallzahlen</Text>
+          <Text marginLeft={16}>Zeige Modellierung</Text>
         </Pane>
 
         <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
@@ -527,35 +527,37 @@ export default function Home(props) {
               fill="#dbbe00"
               fillOpacity={accOpacity['delta_abs']}
             />
-            {accShowActualCases && (
-              <Scatter
-                dataKey="new_cases_smoothed"
-                fill="#700036"
-                fillOpacity={accOpacity['new_cases_smoothed']}
-              />
+            <Scatter
+              dataKey="new_cases_smoothed"
+              fill="#700036"
+              fillOpacity={accOpacity['new_cases_smoothed']}
+            />
+            {accShowModeledCases && (
+              <>
+                <Line
+                  dataKey="omicron_abs_fit"
+                  dot={false}
+                  activeDot={false}
+                  stroke="#8884d8"
+                  strokeOpacity={accOpacity['omicron_abs_fit']}
+                />
+                <Line
+                  dataKey="delta_abs_fit"
+                  dot={false}
+                  activeDot={false}
+                  stroke="#dbbe00"
+                  strokeOpacity={accOpacity['delta_abs_fit']}
+                />
+                <Line
+                  dataKey="new_cases_smoothed_fit"
+                  dot={false}
+                  activeDot={false}
+                  strokeWidth={phone ? 2 : 3}
+                  stroke="#700036"
+                  strokeOpacity={accOpacity['new_cases_smoothed_fit']}
+                />
+              </>
             )}
-            <Line
-              dataKey="omicron_abs_fit"
-              dot={false}
-              activeDot={false}
-              stroke="#8884d8"
-              strokeOpacity={accOpacity['omicron_abs_fit']}
-            />
-            <Line
-              dataKey="delta_abs_fit"
-              dot={false}
-              activeDot={false}
-              stroke="#dbbe00"
-              strokeOpacity={accOpacity['delta_abs_fit']}
-            />
-            <Line
-              dataKey="new_cases_smoothed_fit"
-              dot={false}
-              activeDot={false}
-              strokeWidth={phone ? 2 : 3}
-              stroke="#700036"
-              strokeOpacity={accOpacity['new_cases_smoothed_fit']}
-            />
           </ComposedChart>
         </ResponsiveContainer>
       </Card>
