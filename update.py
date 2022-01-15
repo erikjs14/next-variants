@@ -86,7 +86,7 @@ def sigmoid_x(y, x0, k, max=1):
     return (x0 + np.log(1/y - 1) / (-k)) / max
 
 
-def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm'):
+def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm', p0=None):
 
     if start: df_tmp = df[df.date >= start]
     if end and type(end) == str: df_tmp = df[df.date <= end]
@@ -95,7 +95,8 @@ def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm'):
     xdata = df_tmp.index # should use date
     ydata = df_tmp[col]
 
-    p0 = [np.median(xdata),1] # this is an mandatory initial guess
+    if not p0:
+        p0 = [np.median(xdata),1] # this is an mandatory initial guess
 
     popt, pcov = curve_fit(f, xdata, ydata,p0, method=method, maxfev=10000000000)
     
@@ -112,8 +113,8 @@ def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm'):
 
     return df_out, popt
 
-delta_growth_fit, popt_dgf = fit(agg_data, 'delta_rel', sigmoid, '2021-02-15', '2021-11-01', method='dogbox')
-omicron_growth_fit, popt_ogf = fit(agg_data, 'omicron_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox')
+delta_growth_fit, popt_dgf = fit(agg_data, 'delta_rel', sigmoid, '2021-02-15', '2021-11-01', method='dogbox', p0=[1.76120820e+02, 1.24058886e-01])
+omicron_growth_fit, popt_ogf = fit(agg_data, 'omicron_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox', p0=[3.69856596e+02, 1.45054351e-01])
 
 delta_vs_omicron_offset = -200 # days
 
@@ -137,12 +138,12 @@ from functools import partial
 
 forecast_days = 28
 
-delta_abs_fit, popt_daf = fit(abs_data, 'delta_abs', partial(sigmoid, max=abs_data.delta_abs.max()), add_days=forecast_days, method='dogbox')
+delta_abs_fit, popt_daf = fit(abs_data, 'delta_abs', partial(sigmoid, max=abs_data.delta_abs.max()), add_days=forecast_days, method='dogbox', p0=[29.41586688, -0.1227476 ])
 
 def exp(x, A, b):
   return A * np.exp(b * x)
 
-omicron_abs_fit, popt_oaf = fit(abs_data, 'omicron_abs', exp, add_days=forecast_days, method='trf')
+omicron_abs_fit, popt_oaf = fit(abs_data, 'omicron_abs', exp, add_days=forecast_days, method='trf', p0=[4.05931889e+02, 9.54850414e-02])
 
 abs_data_fit = pd.concat([abs_data, delta_abs_fit[['fit']].rename({'fit': 'delta_abs_fit'}, axis=1)], axis=1)
 abs_data_fit = pd.concat([abs_data_fit, omicron_abs_fit[['fit']].rename({'fit': 'omicron_abs_fit'}, axis=1)], axis=1)
