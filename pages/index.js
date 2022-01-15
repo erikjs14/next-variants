@@ -29,6 +29,13 @@ import {
 } from 'recharts';
 import Image from 'next/image';
 
+const logit = x => Math.log(x / (1 - x));
+const sigmoid = x => Math.exp(x) / (1 + Math.exp(x));
+const toPercentage = (x, fixed = 0) =>
+  (x > 0 && x < 1 && (x < 0.01 || x > 0.99)) || fixed
+    ? (x * 100).toFixed(fixed || 1) + '%'
+    : (x * 100).toFixed() + '%';
+
 export default function Home(props) {
   const [ogcLogit, setOgcLogit] = useState(false);
   const [ogcFit, setOgcFit] = useState(false);
@@ -89,8 +96,13 @@ export default function Home(props) {
           fit:
             d.fit ||
             props.projectionOmicronGrowth.find(p => p.date === d.date)?.fit,
+        }))
+        .map(d => ({
+          ...d,
+          omicron_rel: ogcLogit ? logit(d.omicron_rel) : d.omicron_rel,
+          fit: ogcLogit ? logit(d.fit) : d.fit,
         })),
-    [ogcFit, props.aggData, props.projectionOmicronGrowth],
+    [ogcFit, ogcLogit, props.aggData, props.projectionOmicronGrowth],
   );
   const ogcLabelMap = useMemo(
     () => ({
@@ -174,6 +186,21 @@ export default function Home(props) {
               noDec: true,
             });
           }
+
+          if (ogcLogit) {
+            const fitIdx = pl.findIndex(d => d.name === 'fit');
+            const relIdx = pl.findIndex(d => d.name === 'omicron_rel');
+            pl = pl.map((d, idx) => {
+              if (idx === fitIdx || idx === relIdx) {
+                return {
+                  ...d,
+                  value: sigmoid(d.value),
+                };
+              } else {
+                return d;
+              }
+            });
+          }
         }
         const labelMap =
           type === 'ogc' ? ogcLabelMap : type === 'acc' ? accLabelMap : {};
@@ -188,19 +215,25 @@ export default function Home(props) {
             <Heading size={400} marginBottom={4}>
               {label}
             </Heading>
-            {pl.map(d => (
-              <Pane
-                key={d.name}
-                display="flex"
-                justifyContent="space-between"
-                color={d.color}
-              >
-                <Text color="inherit">{labelMap[d.name] || d.name}:</Text>
-                <Text color="inherit" marginLeft={16} fontFamily="mono">
-                  {d.value.toFixed(d.noDec ? 0 : type === 'ogc' ? 6 : 2)}
-                </Text>
-              </Pane>
-            ))}
+            {pl.map(d =>
+              d?.value ? (
+                <Pane
+                  key={d.name}
+                  display="flex"
+                  justifyContent="space-between"
+                  color={d.color}
+                >
+                  <Text color="inherit">{labelMap[d.name] || d.name}:</Text>
+                  <Text color="inherit" marginLeft={16} fontFamily="mono">
+                    {d.noDec
+                      ? d.value.toFixed()
+                      : type === 'ogc'
+                      ? toPercentage(d.value, 4)
+                      : d.value.toFixed(2)}
+                  </Text>
+                </Pane>
+              ) : null,
+            )}
           </Pane>
         );
       }
@@ -251,7 +284,7 @@ export default function Home(props) {
               marginX={8}
               display="inline-block"
             />
-            Log
+            Logit
           </Text>
           <Text
             display="flex"
@@ -287,12 +320,16 @@ export default function Home(props) {
             <XAxis dataKey="date" />
             <YAxis
               dataKey="omicron_rel"
-              scale={ogcLogit ? 'log' : 'linear'}
-              domain={
-                ogcLogit ? [dataMin => dataMin - 0.5 * dataMin, 1] : [-0.1, 1]
+              scale={ogcLogit ? 'linear' : 'linear'}
+              domain={ogcLogit ? [-8, 8] : [-0.1, 1]}
+              ticks={
+                ogcLogit
+                  ? [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999].map(logit)
+                  : []
               }
-              allowDataOverflow
-              ticks={ogcLogit ? [0.01, 0.1, 0.5, 0.9, 0.99, 1] : []}
+              tickFormatter={val =>
+                ogcLogit ? toPercentage(sigmoid(val)) : toPercentage(val)
+              }
             />
             <ZAxis
               dataKey="sum"
@@ -322,9 +359,10 @@ export default function Home(props) {
                 label={
                   ogcFit
                     ? {
-                        value: `Heute (${ogcData
-                          .find(d => todayStr === d.date)
-                          ?.fit.toFixed(2)})`,
+                        value: `Heute (${(() => {
+                          const d = ogcData.find(d => todayStr === d.date)?.fit;
+                          return toPercentage(ogcLogit ? sigmoid(d) : d);
+                        })()})`,
                         position: 'top',
                         opacity: 0.25,
                       }
