@@ -121,7 +121,7 @@ def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm', p0
     return df_out, popt
 
 delta_growth_fit, popt_dgf = fit(agg_data, 'delta_rel', sigmoid, '2021-02-15', '2021-11-01', method='dogbox', p0=[1.76120820e+02, 1.24058886e-01])
-omicron_growth_fit, popt_ogf = fit(agg_data, 'omicron_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox', p0=[3.69856596e+02, 1.45054351e-01])
+omicron_growth_fit, popt_ogf = fit(agg_data, 'omicron_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox') #, p0=[3.69856596e+02, 1.45054351e-01])
 
 delta_vs_omicron_offset = -200 # days
 
