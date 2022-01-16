@@ -37,8 +37,9 @@ const toPercentage = (x, fixed = 0) =>
     : (x * 100).toFixed() + '%';
 
 export default function Home(props) {
-  const [ogcLogit, setOgcLogit] = useState(false);
+  const [ogcLogit, setOgcLogit] = useState(true);
   const [ogcFit, setOgcFit] = useState(false);
+  const [ogcShowStrains, setOgcShowStrains] = useState(false);
 
   const [accForecastDays, setAccForecastDays] = useState(14);
   const [accShowModeledCases, setAccShowModeledCases] = useState(true);
@@ -63,6 +64,7 @@ export default function Home(props) {
     );
   }, []);
 
+  console.log(Object.keys(props.aggData[0]));
   const ogcData = useMemo(
     () =>
       props.aggData
@@ -92,6 +94,9 @@ export default function Home(props) {
         .map(d => ({
           date: d.date,
           omicron_rel: d.omicron_rel,
+          ba1_rel: d['ba1_rel'],
+          ba2_rel: d['ba2_rel'],
+          ba3_rel: d['ba3_rel'],
           sum: d.sum,
           fit:
             d.fit ||
@@ -100,6 +105,24 @@ export default function Home(props) {
         .map(d => ({
           ...d,
           omicron_rel: ogcLogit ? logit(d.omicron_rel) : d.omicron_rel,
+          ba1_rel:
+            d.ba1_rel > 0
+              ? ogcLogit
+                ? logit(d.ba1_rel)
+                : d.ba1_rel
+              : undefined,
+          ba2_rel:
+            d.ba2_rel > 0
+              ? ogcLogit
+                ? logit(d.ba2_rel)
+                : d.ba2_rel
+              : undefined,
+          ba3_rel:
+            d.ba3_rel > 0
+              ? ogcLogit
+                ? logit(d.ba3_rel)
+                : d.ba3_rel
+              : undefined,
           fit: ogcLogit ? logit(d.fit) : d.fit,
         })),
     [ogcFit, ogcLogit, props.aggData, props.projectionOmicronGrowth],
@@ -108,11 +131,16 @@ export default function Home(props) {
     () => ({
       date: 'Datum',
       omicron_rel: 'Omikron [relativ]',
+      ba1_rel: 'BA.1 [relativ]',
+      ba2_rel: 'BA.2 [relativ]',
+      ba3_rel: 'BA.3 [relativ]',
       sum: 'Anzahl Sequenzierungen',
       fit: 'Modelliertes Wachstum',
     }),
     [],
   );
+
+  console.table(ogcData);
 
   const accData = useMemo(
     () =>
@@ -190,8 +218,12 @@ export default function Home(props) {
           if (ogcLogit) {
             const fitIdx = pl.findIndex(d => d.name === 'fit');
             const relIdx = pl.findIndex(d => d.name === 'omicron_rel');
+            const ba1RelIdx = pl.findIndex(d => d.name === 'ba1_rel');
+            const ba2RelIdx = pl.findIndex(d => d.name === 'ba2_rel');
+            const ba3RelIdx = pl.findIndex(d => d.name === 'ba3_rel');
+            const idc = [fitIdx, relIdx, ba1RelIdx, ba2RelIdx, ba3RelIdx];
             pl = pl.map((d, idx) => {
-              if (idx === fitIdx || idx === relIdx) {
+              if (idc.some(i => i === idx)) {
                 return {
                   ...d,
                   value: sigmoid(d.value),
@@ -304,6 +336,19 @@ export default function Home(props) {
           </Text>
         </Pane>
 
+        <Pane
+          display="flex"
+          justifyContent={phone ? 'center' : 'flex-end'}
+          marginTop={8}
+          alignItems="center"
+        >
+          <Checkbox
+            checked={ogcShowStrains}
+            onChange={e => setOgcShowStrains(e.target.checked)}
+            label={<Text marginLeft={16}>Zeige Subtypen</Text>}
+          />
+        </Pane>
+
         <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
           <ComposedChart
             width={1000}
@@ -319,7 +364,6 @@ export default function Home(props) {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis
-              dataKey="omicron_rel"
               scale={ogcLogit ? 'linear' : 'linear'}
               domain={ogcLogit ? [-8, 8] : [-0.1, 1]}
               ticks={
@@ -371,6 +415,13 @@ export default function Home(props) {
               />
             )}
             <Scatter dataKey="omicron_rel" fill="#8884d8" />
+            {ogcShowStrains && (
+              <>
+                <Scatter dataKey="ba1_rel" fill="#005fa3" opacity={0.9} />
+                <Scatter dataKey="ba2_rel" fill="#f55a00" opacity={0.9} />
+                <Scatter dataKey="ba3_rel" fill="#00994f" opacity={0.9} />
+              </>
+            )}
             <Line dataKey="fit" dot={false} activeDot={false} fill="#3182bd" />
           </ComposedChart>
         </ResponsiveContainer>
@@ -384,9 +435,9 @@ export default function Home(props) {
           marginX="auto"
         >
           Dargestellt sind die relativen Häufigkeiten der Omikron Variante
-          (inkl. aller Subtypen), wie vom RKI im Rahmen der repräsentativen
-          Surveillance berichtet. Die Größe der Kreise repräsentiert die Anzahl
-          der Sequenzierungen dieses Tages. <br />
+          (inkl. aller Subtypen) an den Gesamtinfektionen, wie vom RKI im Rahmen
+          der repräsentativen Surveillance berichtet. Die Größe der Kreise
+          repräsentiert die Anzahl der Sequenzierungen dieses Tages. <br />
           Die durchgezogene Linie stellt die reine mathematische Modellierung
           dieses Wachstums anhand einer Sigmoid-Funktion dar. Die Extrapolation
           betrachtet keinerlei externe Faktoren.
@@ -440,8 +491,8 @@ export default function Home(props) {
           <Checkbox
             checked={accShowModeledCases}
             onChange={e => setAccShowModeledCases(e.target.checked)}
+            label={<Text marginLeft={16}>Zeige Modellierung</Text>}
           />
-          <Text marginLeft={16}>Zeige Modellierung</Text>
         </Pane>
 
         <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
