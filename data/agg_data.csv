@@ -1,4 +1,4 @@
-date,alpha,beta,eta,lambda,epsilon,gamma,iota,delta,mu,omicron,alpha_rel,beta_rel,eta_rel,lambda_rel,epsilon_rel,gamma_rel,iota_rel,delta_rel,mu_rel,omicron_rel,other,other_rel,sum,BA.1,BA.1_rel,BA.2,BA.2_rel,BA.3,BA.3_rel
+date,alpha,beta,eta,lambda,epsilon,gamma,iota,delta,mu,omicron,alpha_rel,beta_rel,eta_rel,lambda_rel,epsilon_rel,gamma_rel,iota_rel,delta_rel,mu_rel,omicron_rel,other,other_rel,sum,ba1,ba1_rel,ba2,ba2_rel,ba3,ba3_rel
 2020-01-29,0,0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1,1.0,1,0,0.0,0,0.0,0,0.0
 2020-01-30,0,0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1,1.0,1,0,0.0,0,0.0,0,0.0
 2020-01-31,0,0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1,1.0,1,0,0.0,0,0.0,0,0.0
