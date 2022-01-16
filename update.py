@@ -27,6 +27,11 @@ scorpios
 
 alphabet = ['alpha', 'beta', 'eta', 'zeta', 'lambda', 'gamma', 'epsilon', 'theta', 'iota', 'epsilon', 'delta', 'mu', 'omicron']
 alphabet_lineage = ['BA.1', 'BA.2', 'BA.3']
+lineage_map = {
+    'BA.1': 'ba1',
+    'BA.2': 'ba2',
+    'BA.3': 'ba3',
+}
 
 data['variant'] = data.scorpio_call
 for letter in alphabet:
@@ -61,8 +66,8 @@ for date in data.DATE_DRAW.unique():
 
     # separately count omicron lineages
     for lineage in alphabet_lineage:
-      entry[lineage] = grouped_data_lineage[date, lineage] if date in grouped_data_lineage and lineage in grouped_data_lineage[date] else 0
-      entry[lineage + '_rel'] = entry[lineage] / total
+      entry[lineage_map[lineage]] = grouped_data_lineage[date, lineage] if date in grouped_data_lineage and lineage in grouped_data_lineage[date] else 0
+      entry[lineage_map[lineage] + '_rel'] = entry[lineage] / total
     
     agg_data_list.append(entry)
 
