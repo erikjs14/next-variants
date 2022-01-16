@@ -26,6 +26,7 @@ scorpios = data.scorpio_call.unique()
 scorpios
 
 alphabet = ['alpha', 'beta', 'eta', 'zeta', 'lambda', 'gamma', 'epsilon', 'theta', 'iota', 'epsilon', 'delta', 'mu', 'omicron']
+alphabet_lineage = ['BA.1', 'BA.2', 'BA.3']
 
 data['variant'] = data.scorpio_call
 for letter in alphabet:
@@ -36,20 +37,20 @@ for letter in alphabet:
         )
 
 grouped_data = data.groupby(['DATE_DRAW', 'variant']).size()
-grouped_data
+grouped_data_lineage = data.groupby(['DATE_DRAW', 'lineage']).size()
+daily_totals = data.groupby('DATE_DRAW').size()
 
 """### Group and calc relatives"""
 
 agg_data_list = []
 for date in data.DATE_DRAW.unique():
-    if date not in grouped_data: continue
-    total = 0
+    if date not in grouped_data and date not in grouped_data_lineage: continue
+    total = daily_totals[date]
     entry = {'date': date}
     variant_sum = 0
     for variant in data.variant.unique():
-        total += grouped_data[date, variant] if variant in grouped_data[date] else 0
         if str(variant).lower() not in alphabet: continue
-        entry[str(variant).lower()] = grouped_data[date, variant] if variant in grouped_data[date] else 0
+        entry[str(variant).lower()] = grouped_data[date, variant] if date in grouped_data and variant in grouped_data[date] else 0
         variant_sum += entry[str(variant).lower()]
     for variant in data.variant.unique():
         if str(variant).lower() not in alphabet: continue
@@ -57,6 +58,12 @@ for date in data.DATE_DRAW.unique():
     entry['other'] = total - variant_sum
     entry['other_rel'] = (total - variant_sum) / total
     entry['sum'] = total
+
+    # separately count omicron lineages
+    for lineage in alphabet_lineage:
+      entry[lineage] = grouped_data_lineage[date, lineage] if date in grouped_data_lineage and lineage in grouped_data_lineage[date] else 0
+      entry[lineage + '_rel'] = entry[lineage] / total
+    
     agg_data_list.append(entry)
 
 agg_data = pd.DataFrame(agg_data_list)
