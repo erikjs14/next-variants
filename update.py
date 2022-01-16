@@ -67,7 +67,7 @@ for date in data.DATE_DRAW.unique():
     # separately count omicron lineages
     for lineage in alphabet_lineage:
       entry[lineage_map[lineage]] = grouped_data_lineage[date, lineage] if date in grouped_data_lineage and lineage in grouped_data_lineage[date] else 0
-      entry[lineage_map[lineage] + '_rel'] = entry[lineage] / total
+      entry[lineage_map[lineage] + '_rel'] = entry[lineage_map[lineage]] / total
     
     agg_data_list.append(entry)
 
