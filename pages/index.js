@@ -64,7 +64,6 @@ export default function Home(props) {
     );
   }, []);
 
-  console.log(Object.keys(props.aggData[0]));
   const ogcData = useMemo(
     () =>
       props.aggData
@@ -139,8 +138,6 @@ export default function Home(props) {
     }),
     [],
   );
-
-  console.table(ogcData);
 
   const accData = useMemo(
     () =>
