@@ -416,7 +416,7 @@ export default function Home(props) {
               formatter={val => {
                 return (
                   <Text
-                    opacity={accOpacity[val]}
+                    opacity={ogcOpacity[val]}
                     color="inherit"
                     cursor="pointer"
                   >
