@@ -382,7 +382,7 @@ export default function Home(props) {
             />
             <ChartTooltip content={CustomTooltip('ogc')} />
             <Legend
-              layout={phone ? 'vertical' : 'horizontal'}
+              layout={'horizontal'}
               align="center"
               verticalAlign="bottom"
               wrapperStyle={{
@@ -430,7 +430,7 @@ export default function Home(props) {
           lineHeight={1.2}
           maxWidth={1024}
           paddingX={phone ? 8 : 64}
-          marginTop={phone ? 64 : 32}
+          marginTop={phone ? 80 : 32}
           textAlign={phone ? 'justify' : 'left'}
           marginX="auto"
         >
