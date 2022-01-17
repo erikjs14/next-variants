@@ -138,6 +138,33 @@ export default function Home(props) {
     }),
     [],
   );
+  const [ogcOpacity, setOgcOpacity] = useState(
+    (() => {
+      const init = {};
+      for (let key of Object.keys(ogcLabelMap)) {
+        init[key] = 1;
+      }
+      return init;
+    })(),
+  );
+  const ogcHandleMouseEnter = o => {
+    setOgcOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 0.5 : 0.1,
+    }));
+  };
+  const ogcHandleMouseLeave = o => {
+    setOgcOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 1 : 0.1,
+    }));
+  };
+  const ogcHandleClick = o => {
+    setOgcOpacity(prev => ({
+      ...prev,
+      [o.value]: prev[o.value] > 0.1 ? 0.1 : 0.5,
+    }));
+  };
 
   const accData = useMemo(
     () =>
@@ -177,19 +204,19 @@ export default function Home(props) {
       return init;
     })(),
   );
-  const handleMouseEnter = o => {
+  const accHandleMouseEnter = o => {
     setAccOpacity(prev => ({
       ...prev,
       [o.value]: prev[o.value] > 0.1 ? 0.5 : 0.1,
     }));
   };
-  const handleMouseLeave = o => {
+  const accHandleMouseLeave = o => {
     setAccOpacity(prev => ({
       ...prev,
       [o.value]: prev[o.value] > 0.1 ? 1 : 0.1,
     }));
   };
-  const handleClick = o => {
+  const accHandleClick = o => {
     setAccOpacity(prev => ({
       ...prev,
       [o.value]: prev[o.value] > 0.1 ? 0.1 : 0.5,
@@ -387,8 +414,19 @@ export default function Home(props) {
                 paddingLeft: phone ? 30 : undefined,
               }}
               formatter={val => {
-                return <Text color="inherit">{ogcLabelMap[val] || val}</Text>;
+                return (
+                  <Text
+                    opacity={accOpacity[val]}
+                    color="inherit"
+                    cursor="pointer"
+                  >
+                    {ogcLabelMap[val] || val}
+                  </Text>
+                );
               }}
+              onClick={ogcHandleClick}
+              onMouseEnter={ogcHandleMouseEnter}
+              onMouseLeave={ogcHandleMouseLeave}
             />
             {todayStr && (
               <ReferenceLine
@@ -411,15 +449,40 @@ export default function Home(props) {
                 }
               />
             )}
-            <Scatter dataKey="omicron_rel" fill="#8884d8" />
+            <Scatter
+              dataKey="omicron_rel"
+              fill="#8884d8"
+              fillOpacity={ogcOpacity['omicron_rel']}
+            />
             {ogcShowStrains && (
               <>
-                <Scatter dataKey="ba1_rel" fill="#005fa3" opacity={0.9} />
-                <Scatter dataKey="ba2_rel" fill="#f55a00" opacity={0.9} />
-                <Scatter dataKey="ba3_rel" fill="#00994f" opacity={0.9} />
+                <Scatter
+                  dataKey="ba1_rel"
+                  fill="#005fa3"
+                  opacity={0.9}
+                  fillOpacity={ogcOpacity['ba1_rel']}
+                />
+                <Scatter
+                  dataKey="ba2_rel"
+                  fill="#f55a00"
+                  opacity={0.9}
+                  fillOpacity={ogcOpacity['ba2_rel']}
+                />
+                <Scatter
+                  dataKey="ba3_rel"
+                  fill="#00994f"
+                  opacity={0.9}
+                  fillOpacity={ogcOpacity['ba3_rel']}
+                />
               </>
             )}
-            <Line dataKey="fit" dot={false} activeDot={false} fill="#3182bd" />
+            <Line
+              dataKey="fit"
+              dot={false}
+              activeDot={false}
+              fill="#3182bd"
+              strokeOpacity={ogcOpacity['fit']}
+            />
           </ComposedChart>
         </ResponsiveContainer>
 
@@ -524,9 +587,9 @@ export default function Home(props) {
                   </Text>
                 );
               }}
-              onClick={handleClick}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              onClick={accHandleClick}
+              onMouseEnter={accHandleMouseEnter}
+              onMouseLeave={accHandleMouseLeave}
             />
             {todayStr && (
               <ReferenceLine
