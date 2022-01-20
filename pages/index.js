@@ -68,9 +68,7 @@ export default function Home(props) {
     () =>
       props.aggData
         .filter(
-          d =>
-            new Date(d.date).getTime() >= new Date('2021-11-15').getTime() &&
-            d.omicron_rel > 0,
+          d => new Date(d.date).getTime() >= new Date('2021-11-15').getTime(),
         )
         .concat(
           ogcFit
@@ -103,25 +101,30 @@ export default function Home(props) {
         }))
         .map(d => ({
           ...d,
-          omicron_rel: ogcLogit ? logit(d.omicron_rel) : d.omicron_rel,
+          omicron_rel:
+            d.sum < 10
+              ? undefined
+              : ogcLogit
+              ? logit(d.omicron_rel || undefined)
+              : d.omicron_rel,
           ba1_rel:
-            d.ba1_rel > 0
-              ? ogcLogit
-                ? logit(d.ba1_rel)
-                : d.ba1_rel
-              : undefined,
+            d.sum < 10 || d.ba1_rel === 0
+              ? undefined
+              : ogcLogit
+              ? logit(d.ba1_rel || undefined)
+              : d.ba1_rel,
           ba2_rel:
-            d.ba2_rel > 0
-              ? ogcLogit
-                ? logit(d.ba2_rel)
-                : d.ba2_rel
-              : undefined,
+            d.sum < 10 || d.ba2_rel === 0
+              ? undefined
+              : ogcLogit
+              ? logit(d.ba2_rel || undefined)
+              : d.ba2_rel,
           ba3_rel:
-            d.ba3_rel > 0
-              ? ogcLogit
-                ? logit(d.ba3_rel)
-                : d.ba3_rel
-              : undefined,
+            d.sum < 10 || d.ba3_rel === 0
+              ? undefined
+              : ogcLogit
+              ? logit(d.ba3_rel || undefined)
+              : d.ba3_rel,
           fit: ogcLogit ? logit(d.fit) : d.fit,
         })),
     [ogcFit, ogcLogit, props.aggData, props.projectionOmicronGrowth],
@@ -272,7 +275,7 @@ export default function Home(props) {
               {label}
             </Heading>
             {pl.map(d =>
-              d?.value ? (
+              d?.value || d.value === 0 ? (
                 <Pane
                   key={d.name}
                   display="flex"
