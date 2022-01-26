@@ -127,6 +127,8 @@ def fit(df, col, f, start='2021-01-01', end=None, add_days=None, method='lm', p0
 
 delta_growth_fit, popt_dgf = fit(agg_data, 'delta_rel', sigmoid, '2021-02-15', '2021-11-01', method='dogbox', p0=[1.76120820e+02, 1.24058886e-01])
 omicron_growth_fit, popt_ogf = fit(agg_data, 'omicron_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox') #, p0=[3.69856596e+02, 1.45054351e-01])
+ba1_growth_fit, popt_ba1gf = fit(agg_data, 'ba1_rel', sigmoid, '2021-11-01', -3, 50, method='dogbox')
+ba2_growth_fit, popt_ba2gf = fit(agg_data, 'ba2_rel', sigmoid, '2021-12-20', -3, 50, method='dogbox')
 
 delta_vs_omicron_offset = -200 # days
 
@@ -136,13 +138,15 @@ owid_data = pd.read_csv('owid-covid-data.csv')
 owid_data_ger = owid_data[owid_data.iso_code == 'DEU']
 owid_data_ger.head()
 
-abs_data = agg_data_rolling[['date','delta_rel','omicron_rel']]
+abs_data = agg_data_rolling[['date','delta_rel','omicron_rel', 'ba1_rel', 'ba2_rel']]
 abs_data = abs_data[abs_data.date >= '2021-11-23'] # from 11/23 omicron started to appear
 
 abs_data = pd.merge(abs_data, owid_data_ger[['date', 'new_cases_smoothed']], on='date', how='inner')
 
 abs_data['delta_abs'] = abs_data['delta_rel'] * abs_data['new_cases_smoothed']
 abs_data['omicron_abs'] = abs_data['omicron_rel'] * abs_data['new_cases_smoothed']
+abs_data['ba1_abs'] = abs_data['ba1_rel'] * abs_data['new_cases_smoothed']
+abs_data['ba2_abs'] = abs_data['ba2_rel'] * abs_data['new_cases_smoothed']
 
 abs_data
 
@@ -156,14 +160,20 @@ def exp(x, A, b):
   return A * np.exp(b * x)
 
 omicron_abs_fit, popt_oaf = fit(abs_data, 'omicron_abs', exp, add_days=forecast_days, method='trf', p0=[4.05931889e+02, 9.54850414e-02])
+ba1_abs_fit, popt_ba1af = fit(abs_data, 'ba1_abs', exp, add_days=forecast_days, method='trf', p0=[4.05931889e+02, 9.54850414e-02])
+ba2_abs_fit, popt_ba2af = fit(abs_data, 'ba2_abs', exp, add_days=forecast_days, method='trf', p0=[4.05931889e+02, 9.54850414e-02])
 
 abs_data_fit = pd.concat([abs_data, delta_abs_fit[['fit']].rename({'fit': 'delta_abs_fit'}, axis=1)], axis=1)
 abs_data_fit = pd.concat([abs_data_fit, omicron_abs_fit[['fit']].rename({'fit': 'omicron_abs_fit'}, axis=1)], axis=1)
+abs_data_fit = pd.concat([abs_data_fit, ba1_abs_fit[['fit']].rename({'fit': 'ba1_abs_fit'}, axis=1)], axis=1)
+abs_data_fit = pd.concat([abs_data_fit, ba2_abs_fit[['fit']].rename({'fit': 'ba2_abs_fit'}, axis=1)], axis=1)
 abs_data_fit['new_cases_smoothed_fit'] = abs_data_fit['delta_abs_fit'] + abs_data_fit['omicron_abs_fit']
 abs_data_fit.loc[len(abs_data.index):, 'date'] = pd.date_range(abs_data.iloc[-1].date, periods=forecast_days+1)[1:].map(lambda d: d.strftime('%Y-%m-%d'))
 
 # abs_data_fit = abs_data_fit.join(omicron_growth_fit.set_index('date').rename({'fit': 'omicron_rel_fit'}, axis=1), on='date', how='left')
 abs_data_fit['omicron_rel_fit'] = abs_data_fit.omicron_abs_fit / abs_data_fit.new_cases_smoothed_fit
+abs_data_fit['ba1_rel_fit'] = abs_data_fit.ba1_abs_fit / abs_data_fit.new_cases_smoothed_fit
+abs_data_fit['ba2_rel_fit'] = abs_data_fit.ba2_abs_fit / abs_data_fit.new_cases_smoothed_fit
 abs_data_fit['delta_rel_fit'] = abs_data_fit.delta_abs_fit / abs_data_fit.new_cases_smoothed_fit
 
 for _, row in owid_data_ger.iterrows():
