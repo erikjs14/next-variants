@@ -40,7 +40,7 @@ const toPercentage = (x, fixed = 0) =>
 export default function Home(props) {
   const [ogcLogit, setOgcLogit] = useState(true);
   const [ogcFit, setOgcFit] = useState(false);
-  const [ogcShowStrains, setOgcShowStrains] = useState(false);
+  const [ogcShowStrains, setOgcShowStrains] = useState(true);
 
   const [accForecastDays, setAccForecastDays] = useState(14);
   const [accShowModeledCases, setAccShowModeledCases] = useState(true);
