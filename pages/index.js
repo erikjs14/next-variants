@@ -30,7 +30,11 @@ import {
 } from 'recharts';
 import Image from 'next/image';
 
-const logit = x => Math.log(x / (1 - x));
+const logit = x => {
+  const result = Math.log(x / (1 - x));
+  if (result === Infinity) return NaN;
+  else return result;
+};
 const sigmoid = x => Math.exp(x) / (1 + Math.exp(x));
 const toPercentage = (x, fixed = 0) =>
   (x > 0 && x < 1 && (x < 0.01 || x > 0.99)) || fixed
@@ -95,6 +99,7 @@ export default function Home(props) {
           ba1_rel: d['ba1_rel'],
           ba2_rel: d['ba2_rel'],
           ba3_rel: d['ba3_rel'],
+          delta_rel: d['delta_rel'],
           sum: d.sum,
           fit:
             d.fit ||
@@ -126,6 +131,12 @@ export default function Home(props) {
               : ogcLogit
               ? logit(d.ba3_rel || undefined)
               : d.ba3_rel,
+          delta_rel:
+            d.sum < 10 || d.delta_rel === 0
+              ? undefined
+              : ogcLogit
+              ? logit(d.delta_rel || undefined)
+              : d.delta_rel,
           fit: ogcLogit ? logit(d.fit) : d.fit,
         })),
     [ogcFit, ogcLogit, props.aggData, props.projectionOmicronGrowth],
@@ -137,6 +148,7 @@ export default function Home(props) {
       ba1_rel: 'BA.1 [relativ]',
       ba2_rel: 'BA.2 [relativ]',
       ba3_rel: 'BA.3 [relativ]',
+      delta_rel: 'Delta [relativ]',
       sum: 'Anzahl Sequenzierungen',
       fit: 'Modelliertes Wachstum',
     }),
@@ -252,7 +264,15 @@ export default function Home(props) {
             const ba1RelIdx = pl.findIndex(d => d.name === 'ba1_rel');
             const ba2RelIdx = pl.findIndex(d => d.name === 'ba2_rel');
             const ba3RelIdx = pl.findIndex(d => d.name === 'ba3_rel');
-            const idc = [fitIdx, relIdx, ba1RelIdx, ba2RelIdx, ba3RelIdx];
+            const deltaRelIdx = pl.findIndex(d => d.name === 'delta_rel');
+            const idc = [
+              fitIdx,
+              relIdx,
+              ba1RelIdx,
+              ba2RelIdx,
+              ba3RelIdx,
+              deltaRelIdx,
+            ];
             pl = pl.map((d, idx) => {
               if (idc.some(i => i === idx)) {
                 return {
@@ -460,6 +480,11 @@ export default function Home(props) {
               dataKey="omicron_rel"
               fill="#8884d8"
               fillOpacity={ogcOpacity['omicron_rel']}
+            />
+            <Scatter
+              dataKey="delta_rel"
+              fill="#bbb"
+              fillOpacity={0.25 * ogcOpacity['delta_rel']}
             />
             {ogcShowStrains && (
               <>
