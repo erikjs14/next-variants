@@ -26,6 +26,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
+  Label,
 } from 'recharts';
 import Image from 'next/image';
 
@@ -181,6 +182,8 @@ export default function Home(props) {
           delta_abs_fit: d.delta_abs_fit,
           new_cases_smoothed_fit: d.new_cases_smoothed_fit,
           new_cases_smoothed: d.new_cases_smoothed || undefined,
+          incidence_smoothed_fit:
+            ((d.new_cases_smoothed_fit * 7) / 83240000) * 100000,
         })),
     [accForecastDays, props.projection],
   );
@@ -195,6 +198,7 @@ export default function Home(props) {
         '7-Tage Mittel tägl. Neuinfektionen [tatsächlich, absolut]',
       new_cases_smoothed_fit:
         '7-Tage Mittel tägl. Neuinfektionen [modelliert, absolut]',
+      incidence_smoothed_fit: '7-Tage-Inzidenz',
     }),
     [],
   );
@@ -563,16 +567,49 @@ export default function Home(props) {
             width={800}
             height={phone ? 400 : 500}
             margin={{
-              top: 20,
-              right: 10,
+              top: 40,
+              right: phone ? 0 : 10,
               bottom: 20,
-              left: 0,
+              left: phone ? 0 : 10,
             }}
             data={accData}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis />
+            <YAxis
+              yAxisId="lefty"
+              label={
+                phone
+                  ? {
+                      value: 'Neuinf.',
+                      position: 'top',
+                      offset: 30,
+                    }
+                  : {
+                      value: 'Tägl. Neuinfektionen',
+                      position: 'left',
+                      angle: -90,
+                      offset: 20,
+                    }
+              }
+            ></YAxis>
+            <YAxis
+              yAxisId="righty"
+              orientation="right"
+              label={
+                phone
+                  ? {
+                      value: 'Inz.',
+                      position: 'top',
+                      offset: 30,
+                    }
+                  : {
+                      value: '7-Tage-Inzidenz',
+                      position: 'right',
+                      angle: 90,
+                    }
+              }
+            />
             {phone && <ZAxis range={[15, 15]} />}
             <ChartTooltip content={CustomTooltip('acc')} />
             <Legend
@@ -581,13 +618,15 @@ export default function Home(props) {
               verticalAlign="bottom"
               formatter={val => {
                 return (
-                  <Text
-                    opacity={accOpacity[val]}
-                    color="inherit"
-                    cursor="pointer"
-                  >
-                    {accLabelMap[val] || val}
-                  </Text>
+                  val !== 'incidence_smoothed_fit' && (
+                    <Text
+                      opacity={accOpacity[val]}
+                      color="inherit"
+                      cursor="pointer"
+                    >
+                      {accLabelMap[val] || val}
+                    </Text>
+                  )
                 );
               }}
               onClick={accHandleClick}
@@ -608,6 +647,7 @@ export default function Home(props) {
                     ? { value: 'Heute', position: 'top', opacity: 0.25 }
                     : ''
                 }
+                yAxisId="lefty"
               />
             )}
             {todayStr && (
@@ -628,6 +668,7 @@ export default function Home(props) {
                   { x: props.aggData[props.aggData.length - 1].date, y: 0 },
                   { x: accData[accData.length - 1].date, y: 0 },
                 ]}
+                yAxisId="lefty"
               />
             )}
             <Scatter
@@ -635,16 +676,19 @@ export default function Home(props) {
               fill="#8884d8"
               size
               fillOpacity={accOpacity['omicron_abs']}
+              yAxisId="lefty"
             />
             <Scatter
               dataKey="delta_abs"
               fill="#dbbe00"
               fillOpacity={accOpacity['delta_abs']}
+              yAxisId="lefty"
             />
             <Scatter
               dataKey="new_cases_smoothed"
               fill="#700036"
               fillOpacity={accOpacity['new_cases_smoothed']}
+              yAxisId="lefty"
             />
             {accShowModeledCases && (
               <>
@@ -654,6 +698,7 @@ export default function Home(props) {
                   activeDot={false}
                   stroke="#8884d8"
                   strokeOpacity={accOpacity['omicron_abs_fit']}
+                  yAxisId="lefty"
                 />
                 <Line
                   dataKey="delta_abs_fit"
@@ -661,6 +706,7 @@ export default function Home(props) {
                   activeDot={false}
                   stroke="#dbbe00"
                   strokeOpacity={accOpacity['delta_abs_fit']}
+                  yAxisId="lefty"
                 />
                 <Line
                   dataKey="new_cases_smoothed_fit"
@@ -669,9 +715,17 @@ export default function Home(props) {
                   strokeWidth={phone ? 2 : 3}
                   stroke="#700036"
                   strokeOpacity={accOpacity['new_cases_smoothed_fit']}
+                  yAxisId="lefty"
                 />
               </>
             )}
+            <Scatter
+              dataKey="incidence_smoothed_fit"
+              fill="#700036"
+              fillOpacity={0}
+              legendType="none"
+              yAxisId="righty"
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </Card>
