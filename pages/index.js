@@ -44,7 +44,7 @@ const toPercentage = (x, fixed = 0) =>
 export default function Home(props) {
   const [ogcLogit, setOgcLogit] = useState(true);
   const [ogcFit, setOgcFit] = useState(false);
-  const [ogcShowStrains, setOgcShowStrains] = useState(true);
+  const [ogcShowStrains, setOgcShowStrains] = useState(false);
 
   const [accForecastDays, setAccForecastDays] = useState(14);
   const [accShowModeledCases, setAccShowModeledCases] = useState(true);
@@ -104,6 +104,9 @@ export default function Home(props) {
           fit:
             d.fit ||
             props.projectionOmicronGrowth.find(p => p.date === d.date)?.fit,
+          ba2_rel_fit:
+            d['ba2_rel_fit'] ||
+            props.projectionBa2Growth.find(p => p.date === d.date)?.fit,
         }))
         .map(d => ({
           ...d,
@@ -138,9 +141,17 @@ export default function Home(props) {
               ? logit(d.delta_rel || undefined)
               : d.delta_rel,
           fit: ogcLogit ? logit(d.fit) : d.fit,
+          ba2_rel_fit: ogcLogit ? logit(d.ba2_rel_fit) : d.ba2_rel_fit,
         })),
-    [ogcFit, ogcLogit, props.aggData, props.projectionOmicronGrowth],
+    [
+      ogcFit,
+      ogcLogit,
+      props.aggData,
+      props.projectionBa2Growth,
+      props.projectionOmicronGrowth,
+    ],
   );
+  console.log(props.aggData.map(d => d.ba1_rel_fit));
   const ogcLabelMap = useMemo(
     () => ({
       date: 'Datum',
@@ -151,6 +162,7 @@ export default function Home(props) {
       delta_rel: 'Delta [relativ]',
       sum: 'Anzahl Sequenzierungen',
       fit: 'Modelliertes Wachstum',
+      ba2_rel_fit: 'Modelliertes BA.2 Wachstum',
     }),
     [],
   );
@@ -160,6 +172,7 @@ export default function Home(props) {
       for (let key of Object.keys(ogcLabelMap)) {
         init[key] = 1;
       }
+      init['ba2_rel_fit'] = 0.1;
       return init;
     })(),
   );
@@ -260,6 +273,7 @@ export default function Home(props) {
 
           if (ogcLogit) {
             const fitIdx = pl.findIndex(d => d.name === 'fit');
+            const ba2FitIdx = pl.findIndex(d => d.name === 'ba2_rel_fit');
             const relIdx = pl.findIndex(d => d.name === 'omicron_rel');
             const ba1RelIdx = pl.findIndex(d => d.name === 'ba1_rel');
             const ba2RelIdx = pl.findIndex(d => d.name === 'ba2_rel');
@@ -267,6 +281,7 @@ export default function Home(props) {
             const deltaRelIdx = pl.findIndex(d => d.name === 'delta_rel');
             const idc = [
               fitIdx,
+              ba2FitIdx,
               relIdx,
               ba1RelIdx,
               ba2RelIdx,
@@ -396,7 +411,7 @@ export default function Home(props) {
           <Checkbox
             checked={ogcShowStrains}
             onChange={e => setOgcShowStrains(e.target.checked)}
-            label={<Text marginLeft={16}>Zeige Subtypen</Text>}
+            label={<Text marginLeft={16}>Zeige Alles</Text>}
           />
         </Pane>
 
@@ -487,18 +502,27 @@ export default function Home(props) {
               fillOpacity={0.25 * ogcOpacity['delta_rel']}
             />
             {ogcShowStrains && (
+              <Scatter
+                dataKey="ba1_rel"
+                fill="#005fa3"
+                opacity={0.9}
+                fillOpacity={ogcOpacity['ba1_rel']}
+              />
+            )}
+            <Scatter
+              dataKey="ba2_rel"
+              fill="#f55a00"
+              opacity={0.9}
+              fillOpacity={ogcOpacity['ba2_rel']}
+            />
+            {ogcShowStrains && (
               <>
-                <Scatter
-                  dataKey="ba1_rel"
-                  fill="#005fa3"
-                  opacity={0.9}
-                  fillOpacity={ogcOpacity['ba1_rel']}
-                />
-                <Scatter
-                  dataKey="ba2_rel"
-                  fill="#f55a00"
-                  opacity={0.9}
-                  fillOpacity={ogcOpacity['ba2_rel']}
+                <Line
+                  dataKey="ba2_rel_fit"
+                  dot={false}
+                  activeDot={false}
+                  stroke="#f55a00"
+                  strokeOpacity={ogcOpacity['ba2_rel_fit']}
                 />
                 <Scatter
                   dataKey="ba3_rel"
@@ -512,7 +536,7 @@ export default function Home(props) {
               dataKey="fit"
               dot={false}
               activeDot={false}
-              fill="#3182bd"
+              stroke="#8884d8"
               strokeOpacity={ogcOpacity['fit']}
             />
           </ComposedChart>
@@ -847,9 +871,18 @@ export async function getStaticProps(context) {
   const projection = await readCsv('data/projection.csv');
   //const aggDataRolling = await readCsv('data/agg_data_rolling.csv');
   const projectionOmicronGrowth = await readCsv('data/growth_fit/omicron.csv');
+  const projectionBa1Growth = await readCsv('data/growth_fit/ba1.csv');
+  const projectionBa2Growth = await readCsv('data/growth_fit/ba2.csv');
   const sdps = await JSON.parse(fs.readFileSync('data/sdps.json'));
 
   return {
-    props: { aggData, projectionOmicronGrowth, sdps, projection },
+    props: {
+      aggData,
+      projectionOmicronGrowth,
+      projectionBa1Growth,
+      projectionBa2Growth,
+      sdps,
+      projection,
+    },
   };
 }
