@@ -338,6 +338,8 @@ agg_data_rolling.to_csv('data/agg_data_rolling.csv', index=False)
 
 delta_growth_fit.to_csv('data/growth_fit/delta.csv', index=False)
 omicron_growth_fit.iloc[:-14].to_csv('data/growth_fit/omicron.csv', index=False)
+ba1_growth_fit.iloc[:-14].to_csv('data/growth_fit/ba1.csv', index=False)
+ba2_growth_fit.iloc[:-14].to_csv('data/growth_fit/ba2.csv', index=False)
 
 data_fit.to_csv('data/projection.csv', index=False)
 
