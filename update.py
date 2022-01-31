@@ -41,6 +41,9 @@ for letter in alphabet:
             letter.capitalize()
         )
 
+# add sub-lineage BA.1.1 to BA.1
+data.loc[data.lineage == 'BA.1.1', 'lineage'] = 'BA.1'
+
 grouped_data = data.groupby(['DATE_DRAW', 'variant']).size()
 grouped_data_lineage = data.groupby(['DATE_DRAW', 'lineage']).size()
 daily_totals = data.groupby('DATE_DRAW').size()
