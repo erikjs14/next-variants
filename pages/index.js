@@ -151,7 +151,7 @@ export default function Home(props) {
       props.projectionOmicronGrowth,
     ],
   );
-  console.log(props.aggData.map(d => d.ba1_rel_fit));
+  
   const ogcLabelMap = useMemo(
     () => ({
       date: 'Datum',
@@ -819,8 +819,25 @@ export default function Home(props) {
               >
                 {sdp.label}
               </Heading>
-              <Heading is="span" marginY={16} size={900}>
+              <Heading 
+                is="span" 
+                marginY={16} 
+                size={900}
+                position='relative'
+              >
                 {sdp.value}
+                {sdp.change && (
+                  <Text
+                    size={300}
+                    opacity={0.6}
+                    position='absolute'
+                    top={0}
+                    right={-8}
+                    transform='translateX(100%)'
+                  >
+                    {sdp.change}
+                  </Text>
+                )}
               </Heading>
               <Tooltip content={sdp.hint}>
                 <InfoSignIcon

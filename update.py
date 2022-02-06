@@ -205,81 +205,148 @@ def project_omicron_above(p, popt):
 # single data points
 sdps = []
 
+def get_yesterdays_value(label, sdps):
+  if sdps is None: return None
+  return next((sdp['value_raw'] for sdp in sdps if sdp['label'] == label and 'value_raw' in sdp), None)
+
+def get_diff_str(before, after, round_to=2):
+  diff = float(after) - float(before)
+  if diff >= 0: return f'+{round(diff, round_to)}'
+  else: return f'{round(diff, round_to)}'
+
+# load yesterday's sdps
+try:
+    yesterday_str = (date.today() + timedelta(-1)).strftime('%Y-%m-%d')
+    with open(f'data/historic/sdps/{yesterday_str}.json', 'r') as f:
+        sdps_yesterday = json.load(f)
+except:
+    sdps_yesterday = None
+
 # Reproduction Rate alltogether
+label = 'R-Wert (' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date) + ')'
+value_raw = owid_data_ger.reproduction_rate.dropna().iloc[-1]
+val_y = get_yesterdays_value(label, sdps_yesterday)
 sdps.append({
-    'label': 'R-Wert (' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date) + ')',
-    'value': owid_data_ger.reproduction_rate.dropna().iloc[-1],
-    'hint': 'Kann nur nachrangig gemessen werden. R-Wert gesamt vom ' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date)
+    'label': label,
+    'value': value_raw,
+    'value_raw': value_raw,
+    'hint': 'Kann nur nachhängig gemessen werden. R-Wert gesamt vom ' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date),
+    'change': get_diff_str(value_raw, val_y) if val_y is not None else None,
 })
+
+label = '7-Tage-Inzidenz'
+value_raw = owid_data_ger.iloc[-1].new_cases_smoothed_per_million/10 * 7
+val_y = get_yesterdays_value(label, sdps_yesterday)
 sdps.append({
-    'label': '7-Tage-Inzidenz',
-    'value': '{:.2f}'.format(owid_data_ger.iloc[-1].new_cases_smoothed_per_million/10 * 7),
-    'hint': 'Inzidenz mit Stand ' + owid_data_ger.iloc[-1].date
+    'label': label,
+    'value': '{:.2f}'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Inzidenz mit Stand ' + owid_data_ger.iloc[-1].date,
+    'change': get_diff_str(value_raw, val_y) if val_y is not None else None,
 })
+
+label = 'Verdopplungszeit'
+value_raw = np.log(2) / np.log(1 + ((data_fit.iloc[-1]['new_cases_smoothed_fit'] - data_fit.iloc[-2]['new_cases_smoothed_fit']) / data_fit.iloc[-2]['new_cases_smoothed_fit']))
+val_y = get_yesterdays_value(label, sdps_yesterday)
 sdps.append({
-    'label': 'Verdopplungszeit',
-    'value': '{:.1f} Tage'.format(np.log(2) / np.log(1 + ((data_fit.iloc[-1]['new_cases_smoothed_fit'] - data_fit.iloc[-2]['new_cases_smoothed_fit']) / data_fit.iloc[-2]['new_cases_smoothed_fit']))),
-    'hint': 'Verdopplungszeit der Fallzahlen auf Basis des aktuellen Wachstums.'
+    'label': label,
+    'value': '{:.1f} Tage'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Verdopplungszeit der Fallzahlen auf Basis des aktuellen Wachstums.',
+    'change': get_diff_str(value_raw, val_y) if val_y is not None else None,
 })
+value_raw = int(owid_data_ger.iloc[-1].new_cases)
 sdps.append({
     'label': 'Neue Fälle gestern',
-    'value': int(owid_data_ger.iloc[-1].new_cases),
-    'hint': 'Neue gemeldete Fälle gestern, ' + owid_data_ger.iloc[-1].date
+    'value': value_raw,
+    'value_raw': value_raw,
+    'hint': 'Neue gemeldete Fälle gestern, ' + owid_data_ger.iloc[-1].date,
+    'change': None,
 })
 
 # Share of variants
+value_raw = agg_data_rolling.iloc[-1].omicron_rel*100
 sdps.append({
     'label': 'Anteil Omikron (' + str(agg_data_rolling.iloc[-1].date) + ')',
-    'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].omicron_rel*100),
-    'hint': '3-Tagesdurchschnitt des relativen Anteils der Omikron-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': '3-Tagesdurchschnitt des relativen Anteils der Omikron-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date,
+    'change': None,
 })
+value_raw = agg_data_rolling.iloc[-1].ba1_rel*100
 sdps.append({
     'label': 'Anteil BA.1 (' + str(agg_data_rolling.iloc[-1].date) + ')',
-    'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].ba1_rel*100),
-    'hint': '3-Tagesdurchschnitt des relativen Anteils des Omikron-Subtyps BA.1 an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': '3-Tagesdurchschnitt des relativen Anteils des Omikron-Subtyps BA.1 an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date,
+    'change': None,
 })
+value_raw = agg_data_rolling.iloc[-1].ba2_rel*100
 sdps.append({
     'label': 'Anteil BA.2 (' + str(agg_data_rolling.iloc[-1].date) + ')',
-    'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].ba2_rel*100),
-    'hint': '3-Tagesdurchschnitt des relativen Anteils des Omikron-Subtyps BA.2 an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': '3-Tagesdurchschnitt des relativen Anteils des Omikron-Subtyps BA.2 an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date,
+    'change': None,
 })
+value_raw = agg_data_rolling.iloc[-1].delta_rel*100
 sdps.append({
     'label': 'Anteil Delta (' + str(agg_data_rolling.iloc[-1].date) + ')',
-    'value': '{:.2f}%'.format(agg_data_rolling.iloc[-1].delta_rel*100),
-    'hint': '3-Tagesdurchschnitt des relativen Anteils der Delta-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': '3-Tagesdurchschnitt des relativen Anteils der Delta-Variante an den Gesamtinfektionen. Stand: ' + agg_data_rolling.iloc[-1].date,
+    'change': None,
 })
 
 dft = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')]
+value_raw = 100 * dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]
 sdps.append({
     'label': 'Nowcast Anteil Omikron',
-    'value': '{:.2f}%'.format(100 * dft.omicron_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
-    'hint': 'Projektion Anteil Omikron heute. Berechnet über relative Häufigkeit der Wachstumsprognose der absoluten Zahlen (daher Unterschied zur reinen sigmoiden relativen Wachstumsmodellierung oben).'
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Projektion Anteil Omikron heute',
+    'change': None,
 })
+value_raw = 100 * dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]
 sdps.append({
     'label': 'Nowcast Anteil Delta',
-    'value': '{:.2f}%'.format(100 * dft.delta_abs_fit.iloc[0] / dft.new_cases_smoothed_fit.iloc[0]),
-    'hint': 'Projektion Anteil Delta heute. Berechnet über relative Häufigkeit der Wachstumsprognose der absoluten Zahlen.'
+    'value': '{:.2f}%'.format(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Projektion Anteil Delta heute',
+    'change': None,
 })
 
+# value_raw = project_omicron_above(0.5, popt_ogf)
 # sdps.append({
 #     'label': 'Projektion Omikron 50%',
-#     'value': project_omicron_above(0.5, popt_ogf),
-#     'hint': 'Projektion für Omikron-Anteil > 50%'
+#     'value': value_raw,
+#     'value_raw': value_raw,
+#     'hint': 'Projektion für Omikron-Anteil > 50%',
+#     'change': None,
 # })
+# value_raw = project_omicron_above(0.9, popt_ogf)
 # sdps.append({
 #     'label': 'Projektion Omikron 90%',
-#     'value': project_omicron_above(0.9, popt_ogf),
-#     'hint': 'Projektion für Omikron-Anteil > 90%'
+#     'value': value_raw,
+#     'value_raw': value_raw,
+#     'hint': 'Projektion für Omikron-Anteil > 90%',
+#     'change': None,
 # })
+# value_raw = project_omicron_above(0.95, popt_ogf)
 # sdps.append({
 #     'label': 'Projektion Omikron 95%',
-#     'value': project_omicron_above(0.95, popt_ogf),
-#     'hint': 'Projektion für Omikron-Anteil > 95%'
+#     'value': value_raw,
+#     'value_raw': value_raw,
+#     'hint': 'Projektion für Omikron-Anteil > 95%',
+#     'change': None,
 # })
+# value_raw = project_omicron_above(0.99, popt_ogf)
 # sdps.append({
 #     'label': 'Projektion Omikron 99%',
-#     'value': project_omicron_above(0.99, popt_ogf),
-#     'hint': 'Projektion für Omikron-Anteil > 99%'
+#     'value': value_raw,
+#     'value_raw': value_raw,
+#     'hint': 'Projektion für Omikron-Anteil > 99%',
+#     'change': None,
 # })
 
 today_idx = data_fit[data_fit.date == date.today().strftime('%Y-%m-%d')].index.item()
@@ -289,31 +356,47 @@ two_weeks = (date.today() + timedelta(14)).strftime('%Y-%m-%d')
 two_weeks_idx = data_fit[data_fit.date == two_weeks].index.item()
 three_weeks = (date.today() + timedelta(21)).strftime('%Y-%m-%d')
 three_weeks_idx = data_fit[data_fit.date == three_weeks].index.item()
+
+value_raw = data_fit[data_fit.date == two_weeks].omicron_abs_fit.iloc[0]
 sdps.append({
     'label': 'Projektion Omikron Fallzahlen in 14 Tagen',
-    'value': round(data_fit[data_fit.date == two_weeks].omicron_abs_fit.iloc[0]),
-    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.'
+    'value': round(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Projektion für Omikron-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.',
+    'change': None,
 })
+value_raw = data_fit[data_fit.date == two_weeks].delta_abs_fit.iloc[0]
 sdps.append({
     'label': 'Projektion Delta Fallzahlen in 14 Tagen',
-    'value': round(data_fit[data_fit.date == two_weeks].delta_abs_fit.iloc[0]),
-    'hint': 'Projektion für Delta-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.'
+    'value': round(value_raw),
+    'value_raw': value_raw,
+    'hint': 'Projektion für Delta-Fallzahlen in 14 Tagen basierend auf aktuellem Wachstum.',
+    'change': None,
 })
 
+value_raw = (data_fit.new_cases_smoothed_fit.iloc[today_idx:one_week_idx+1].sum()/83240000)*100000
 sdps.append({
     'label': 'Projektion 7-Tage-Inzidenz in 7 Tagen',
-    'value': str(round((data_fit.new_cases_smoothed_fit.iloc[today_idx:one_week_idx+1].sum()/83240000)*100000, 2)),
-    'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[one_week_idx], 100 * data_fit.omicron_rel_fit.iloc[one_week_idx])
+    'value': str(round(value_raw, 2)),
+    'value_raw': value_raw,
+    'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[one_week_idx], 100 * data_fit.omicron_rel_fit.iloc[one_week_idx]),
+    'change': None,
 })
+# value_raw = (data_fit.new_cases_smoothed_fit.iloc[one_week_idx:two_weeks_idx+1].sum()/83240000)*100000
 # sdps.append({
 #     'label': 'Projektion 7-Tage-Inzidenz in 14 Tagen',
-#     'value': str(round((data_fit.new_cases_smoothed_fit.iloc[one_week_idx:two_weeks_idx+1].sum()/83240000)*100000, 2)),
+#     'value': str(round(value_raw, 2)),
+#     'value_raw': value_raw,
 #     'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[two_weeks_idx], 100 * data_fit.omicron_rel_fit.iloc[two_weeks_idx]),
+#     'change': None,
 # })
+# value_raw = (data_fit.new_cases_smoothed_fit.iloc[two_weeks_idx:three_weeks_idx+1].sum()/83240000)*100000
 # sdps.append({
 #     'label': 'Projektion 7-Tage-Inzidenz in 21 Tagen',
-#     'value': str(round((data_fit.new_cases_smoothed_fit.iloc[two_weeks_idx:three_weeks_idx+1].sum()/83240000)*100000, 2)),
-#     'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[three_weeks_idx], 100 * data_fit.omicron_rel_fit.iloc[three_weeks_idx])
+#     'value': str(round(value_raw, 2)),
+#     'value_raw': value_raw,
+#     'hint': 'Basierend auf aktuellem Wachstum. Davon Delta: {:.2f}%, Omikron: {:.2f}%'.format(100 * data_fit.delta_rel_fit.iloc[three_weeks_idx], 100 * data_fit.omicron_rel_fit.iloc[three_weeks_idx]),
+#     'change': None,
 # })
 
 # cur_idx = 0
@@ -322,12 +405,15 @@ sdps.append({
 # while cur_idx <= data_fit.index.max() and last_cases >= data_fit.loc[cur_idx, 'new_cases_smoothed_fit']:
 #   last_cases = data_fit.loc[cur_idx, 'new_cases_smoothed_fit']
 #   cur_idx += 1
-# 
+
 # if cur_idx <= data_fit.index.max():
+#   value_raw = data_fit.loc[cur_idx, 'date']
 #   sdps.append({
 #       'label': 'Steigende Fälle ab',
-#       'value': data_fit.loc[cur_idx, 'date'],
-#       'hint': 'Datum, ab welchem Fallzahlen wieder steigen (Projektion)'
+#       'value': value_raw,
+#       'value_raw': value_raw,
+#       'hint': 'Datum, ab welchem Fallzahlen wieder steigen (Projektion)',
+#       'change': None,
 #   })
 
 sdps
@@ -335,6 +421,7 @@ sdps
 import json
     
 os.system('mkdir -p data/growth_fit')
+os.system('mkdir -p data/historic/sdps')
 
 agg_data.to_csv('data/agg_data.csv', index=False)
 agg_data_rolling.to_csv('data/agg_data_rolling.csv', index=False)
@@ -347,7 +434,10 @@ ba2_growth_fit.iloc[:-14].to_csv('data/growth_fit/ba2.csv', index=False)
 data_fit.to_csv('data/projection.csv', index=False)
 
 with open("data/sdps.json", "w") as fp:
-    json.dump(sdps , fp)
+    json.dump(sdps , fp) 
+today_str = date.today().strftime('%Y-%m-%d')
+with open(f'data/historic/sdps/{today_str}.json', 'w') as fp:
+    json.dump(sdps, fp)
 
 os.system('rm meta.csv')
 os.system('rm meta.csv.xz')
