@@ -209,7 +209,7 @@ def get_yesterdays_value(label, sdps):
   if sdps is None: return None
   return next((sdp['value_raw'] for sdp in sdps if sdp['label'] == label and 'value_raw' in sdp), None)
 
-def get_diff_str(before, after, round_to=2):
+def get_diff_str(after, before, round_to=2):
   diff = float(after) - float(before)
   if diff >= 0: return f'+{round(diff, round_to)}'
   else: return f'{round(diff, round_to)}'
@@ -217,7 +217,7 @@ def get_diff_str(before, after, round_to=2):
 # load yesterday's sdps
 try:
     yesterday_str = (date.today() + timedelta(-1)).strftime('%Y-%m-%d')
-    with open(f'data/historic/sdps/{yesterday_str}.json', 'r') as f:
+    with open(f'./data/historic/sdps/{yesterday_str}.json', 'r') as f:
         sdps_yesterday = json.load(f)
 except:
     sdps_yesterday = None
