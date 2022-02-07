@@ -218,15 +218,17 @@ def get_diff_str(after, before, round_to=2):
 try:
     print('trying to open')
     yesterday_str = (date.today() + timedelta(-1)).strftime('%Y-%m-%d')
-    with open(f'./data/historic/sdps/{yesterday_str}.json', 'r') as f:
+    with open(f'data/historic/sdps/{yesterday_str}.json', 'r') as f:
         sdps_yesterday = json.load(f)
-except:
+except Exception as err:
     sdps_yesterday = None
     print('exception')
+    print(err)
     
 print({'1': yesterday_str, '2': sdps_yesterday})
 print(os.listdir())
 print(os.listdir('data'))
+print(os.listdir('data/historic/sdps'))
 print(os.getcwd())
 
 # Reproduction Rate alltogether
