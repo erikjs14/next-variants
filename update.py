@@ -225,6 +225,9 @@ except:
     print('exception')
     
 print({'1': yesterday_str, '2': sdps_yesterday})
+print(os.listdir())
+print(os.listdir('data'))
+print(os.getcwd())
 
 # Reproduction Rate alltogether
 label = 'R-Wert (' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date) + ')'
