@@ -1,3 +1,4 @@
+import json
 import urllib.request
 urllib.request.urlretrieve("https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland/raw/master/SARS-CoV-2-Sequenzdaten_Deutschland.csv.xz", "meta.csv.xz")
 urllib.request.urlretrieve("https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland/raw/master/SARS-CoV-2-Entwicklungslinien_Deutschland.csv.xz", "variants.csv.xz")
