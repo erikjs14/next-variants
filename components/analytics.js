@@ -49,13 +49,7 @@ export default function Analytics(props) {
   const [accForecastDays, setAccForecastDays] = useState(14);
   const [accShowModeledCases, setAccShowModeledCases] = useState(true);
 
-  const [phone, setPhone] = useState(false);
-  useEffect(() => {
-    setPhone(window.matchMedia('(max-width: 768px)').matches);
-    window
-      .matchMedia('(max-width: 768px)')
-      .addEventListener('change', e => setPhone(e.matches));
-  }, []);
+  const phone = props.phone;
 
   const [todayStr, setTodayStr] = useState(null);
   useEffect(() => {

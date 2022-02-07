@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import csv from 'csvtojson';
 import Analytics from '../../components/analytics';
-import { Heading, Image, Pane, Alert, Text } from 'evergreen-ui';
+import {
+  Heading,
+  Image,
+  Pane,
+  Alert,
+  Text,
+  Button,
+  UndoIcon,
+} from 'evergreen-ui';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 
 export default function Archive(props) {
+  const router = useRouter();
+
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    setPhone(window.matchMedia('(max-width: 768px)').matches);
+    window
+      .matchMedia('(max-width: 768px)')
+      .addEventListener('change', e => setPhone(e.matches));
+  }, []);
+
   return (
     <>
       <Head>
@@ -24,12 +43,29 @@ export default function Archive(props) {
           Omikron Tracker
         </span>
       </Heading>
-      <Pane display="flex" justifyContent="center" marginX={4} marginTop={32}>
+      <Pane
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        marginX={4}
+        marginTop={32}
+      >
         <Alert intent="none" title="This is an archive page" paddingRight={64}>
           <Text>This page shows data as of {props.archiveDate}.</Text>
         </Alert>
       </Pane>
-      <Analytics {...props} archive={props.archiveDate} />;
+      <Pane
+        marginBottom={phone ? -16 : -32}
+        marginTop={16}
+        display="flex"
+        justifyContent="flex-end"
+        marginX={!phone ? 64 : undefined}
+      >
+        <Button iconBefore={UndoIcon} onClick={() => router.push('/')}>
+          Zurück zu Heute
+        </Button>
+      </Pane>
+      <Analytics {...props} archive={props.archiveDate} phone={phone} />;
     </>
   );
 }

@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import csv from 'csvtojson';
 import Analytics from '../components/analytics';
 import Head from 'next/head';
-import { Heading, Image } from 'evergreen-ui';
+import { useRouter } from 'next/router';
+import {
+  Heading,
+  Image,
+  Popover,
+  Menu,
+  Button,
+  Position,
+  Pane,
+} from 'evergreen-ui';
 
 export default function Home(props) {
+  const router = useRouter();
+
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    setPhone(window.matchMedia('(max-width: 768px)').matches);
+    window
+      .matchMedia('(max-width: 768px)')
+      .addEventListener('change', e => setPhone(e.matches));
+  }, []);
+
   return (
     <>
       <Head>
@@ -24,7 +43,31 @@ export default function Home(props) {
           Omikron Tracker
         </span>
       </Heading>
-      <Analytics {...props} />;
+      <Pane
+        display="flex"
+        justifyContent="flex-end"
+        marginX={!phone ? 64 : undefined}
+        marginTop={phone ? 16 : undefined}
+      >
+        <Popover
+          position={Position.BOTTOM_RIGHT}
+          content={
+            <Menu>
+              {props.dates.map(date => (
+                <Menu.Item
+                  key={date}
+                  onSelect={() => router.push(`/archive/${date}`)}
+                >
+                  {date}
+                </Menu.Item>
+              ))}
+            </Menu>
+          }
+        >
+          <Button marginRight={16}>Archive</Button>
+        </Popover>
+      </Pane>
+      <Analytics {...props} phone={phone} />;
     </>
   );
 }
@@ -43,6 +86,8 @@ export async function getStaticProps(context) {
   const projectionBa2Growth = await readCsv('data/growth_fit/ba2.csv');
   const sdps = await JSON.parse(fs.readFileSync('data/sdps.json'));
 
+  const dates = fs.readdirSync('data/historic');
+
   return {
     props: {
       aggData,
@@ -51,6 +96,7 @@ export async function getStaticProps(context) {
       projectionBa2Growth,
       sdps,
       projection,
+      dates,
     },
   };
 }
