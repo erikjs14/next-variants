@@ -7,6 +7,7 @@ today = datetime.now(pytz.timezone('Europe/Berlin'))
 
 cur_date = today
 while cur_date.strftime('%Y-%m-%d') >= first_date_str:
-  os.system(f'EXPORT DTP={cur_date.strftime('%Y-%m-%d')}')
+  cur_date_str = cur_date.strftime('%Y-%m-%d')
+  os.system(f'EXPORT DTP={cur_date_str}')
   os.system('jupyter nbconvert --ExecutePreprocessor.timeout=500 --execute update.ipynb')
   cur_date = cur_date + timedelta(-1)
