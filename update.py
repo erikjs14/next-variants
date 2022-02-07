@@ -253,7 +253,7 @@ sdps.append({
     'label': label,
     'value': '{:.1f} Tage'.format(value_raw),
     'value_raw': value_raw,
-    'hint': 'Verdopplungszeit der Fallzahlen auf Basis des aktuellen Wachstums.',
+    'hint': 'Verdopplungszeit der Fallzahlen auf Basis des aktuell modellierten Wachstums.',
     'change': get_diff_str(value_raw, val_y) if val_y is not None else None,
 })
 value_raw = int(owid_data_ger.iloc[-1].new_cases)
