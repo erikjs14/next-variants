@@ -32,7 +32,6 @@ export default class MyDocument extends Document {
           <link rel="manifest" href="/manifest.json" />
           <link rel="apple-touch-icon" href="/icon-512x512.png"></link>
           <meta name="theme-color" content="#8884d8" />
-          <title>Omikron Tracker</title>
           <style dangerouslySetInnerHTML={{ __html: css }} />
         </Head>
 

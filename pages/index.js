@@ -26,9 +26,9 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
-  Label,
 } from 'recharts';
 import Image from 'next/image';
+import Head from 'next/head';
 
 const logit = x => {
   const result = Math.log(x / (1 - x));
@@ -151,7 +151,7 @@ export default function Home(props) {
       props.projectionOmicronGrowth,
     ],
   );
-  
+
   const ogcLabelMap = useMemo(
     () => ({
       date: 'Datum',
@@ -340,541 +340,544 @@ export default function Home(props) {
     };
 
   return (
-    <Pane marginTop={32}>
-      <Heading
-        is="h1"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        size={900}
-      >
-        <Image src="/icon-512x512.png" width={42} height={42} alt="Logo" />
-        <span style={{ display: 'inline-block', marginLeft: '1rem' }}>
-          {' '}
-          Omikron Tracker
-        </span>
-      </Heading>
-
-      {/* Omicron Growth Chart (OGC) */}
-      <Card
-        elevation={3}
-        paddingY={16}
-        paddingX={phone ? 4 : 32}
-        margin={!phone ? 64 : undefined}
-        marginY={phone ? 32 : 64}
-        paddingBottom={phone ? 32 : 16}
-      >
-        <Heading textAlign="center" size={500} marginBottom={32}>
-          Omikron Fälle [rel]
+    <>
+      <Head>
+        <title>Omikron Tracker</title>
+      </Head>
+      <Pane marginTop={32}>
+        <Heading
+          is="h1"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          size={900}
+        >
+          <Image src="/icon-512x512.png" width={42} height={42} alt="Logo" />
+          <span style={{ display: 'inline-block', marginLeft: '1rem' }}>
+            {' '}
+            Omikron Tracker
+          </span>
         </Heading>
 
-        <Pane
-          display="flex"
-          justifyContent={'flex-end'}
-          alignItems={'center'}
-          flexDirection={phone ? 'column' : 'row'}
+        {/* Omicron Growth Chart (OGC) */}
+        <Card
+          elevation={3}
+          paddingY={16}
+          paddingX={phone ? 4 : 32}
+          margin={!phone ? 64 : undefined}
+          marginY={phone ? 32 : 64}
+          paddingBottom={phone ? 32 : 16}
         >
-          <Text display="flex" alignItems="center" justifyContent="flex-end">
-            Linear
-            <Switch
-              checked={ogcLogit}
-              onChange={e => setOgcLogit(e.target.checked)}
-              marginX={8}
-              display="inline-block"
-            />
-            Logit
-          </Text>
-          <Text
+          <Heading textAlign="center" size={500} marginBottom={32}>
+            Omikron Fälle [rel]
+          </Heading>
+
+          <Pane
             display="flex"
+            justifyContent={'flex-end'}
+            alignItems={'center'}
+            flexDirection={phone ? 'column' : 'row'}
+          >
+            <Text display="flex" alignItems="center" justifyContent="flex-end">
+              Linear
+              <Switch
+                checked={ogcLogit}
+                onChange={e => setOgcLogit(e.target.checked)}
+                marginX={8}
+                display="inline-block"
+              />
+              Logit
+            </Text>
+            <Text
+              display="flex"
+              alignItems="center"
+              justifyContent="flex-end"
+              marginLeft={32}
+              marginTop={phone ? 8 : undefined}
+            >
+              Bis Heute
+              <Switch
+                checked={ogcFit}
+                onChange={e => setOgcFit(e.target.checked)}
+                marginX={8}
+                display="inline-block"
+              />
+              Projektion
+            </Text>
+          </Pane>
+
+          <Pane
+            display="flex"
+            justifyContent={phone ? 'center' : 'flex-end'}
+            marginTop={8}
             alignItems="center"
-            justifyContent="flex-end"
-            marginLeft={32}
-            marginTop={phone ? 8 : undefined}
           >
-            Bis Heute
-            <Switch
-              checked={ogcFit}
-              onChange={e => setOgcFit(e.target.checked)}
-              marginX={8}
-              display="inline-block"
+            <Checkbox
+              checked={ogcShowStrains}
+              onChange={e => setOgcShowStrains(e.target.checked)}
+              label={<Text marginLeft={16}>Zeige Alles</Text>}
             />
-            Projektion
-          </Text>
-        </Pane>
+          </Pane>
 
-        <Pane
-          display="flex"
-          justifyContent={phone ? 'center' : 'flex-end'}
-          marginTop={8}
-          alignItems="center"
-        >
-          <Checkbox
-            checked={ogcShowStrains}
-            onChange={e => setOgcShowStrains(e.target.checked)}
-            label={<Text marginLeft={16}>Zeige Alles</Text>}
-          />
-        </Pane>
-
-        <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
-          <ComposedChart
-            width={1000}
-            height={phone ? 400 : 500}
-            margin={{
-              top: 20,
-              right: 10,
-              bottom: 20,
-              left: 0,
-            }}
-            data={ogcData}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis
-              scale={ogcLogit ? 'linear' : 'linear'}
-              domain={ogcLogit ? [-8, 8] : [-0.1, 1]}
-              ticks={
-                ogcLogit
-                  ? [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999].map(logit)
-                  : []
-              }
-              tickFormatter={val =>
-                ogcLogit ? toPercentage(sigmoid(val)) : toPercentage(val)
-              }
-            />
-            <ZAxis
-              dataKey="sum"
-              type="number"
-              range={phone ? [10, 80] : [30, 200]}
-            />
-            <ChartTooltip content={CustomTooltip('ogc')} />
-            <Legend
-              layout={'horizontal'}
-              align="center"
-              verticalAlign="bottom"
-              wrapperStyle={{
-                position: 'relative',
-                paddingLeft: phone ? 30 : undefined,
+          <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
+            <ComposedChart
+              width={1000}
+              height={phone ? 400 : 500}
+              margin={{
+                top: 20,
+                right: 10,
+                bottom: 20,
+                left: 0,
               }}
-              formatter={val => {
-                return (
-                  <Text
-                    opacity={ogcOpacity[val]}
-                    color="inherit"
-                    cursor="pointer"
-                  >
-                    {ogcLabelMap[val] || val}
-                  </Text>
-                );
-              }}
-              onClick={ogcHandleClick}
-              onMouseEnter={ogcHandleMouseEnter}
-              onMouseLeave={ogcHandleMouseLeave}
-            />
-            {todayStr && (
-              <ReferenceLine
-                x={todayStr}
-                stroke="black"
-                strokeWidth={2}
-                strokeOpacity={ogcFit ? 0.25 : 0}
-                strokeDasharray={'15 5'}
-                label={
-                  ogcFit
-                    ? {
-                        value: `Heute (${(() => {
-                          const d = ogcData.find(d => todayStr === d.date)?.fit;
-                          return toPercentage(ogcLogit ? sigmoid(d) : d);
-                        })()})`,
-                        position: 'top',
-                        opacity: 0.25,
-                      }
-                    : ''
+              data={ogcData}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis
+                scale={ogcLogit ? 'linear' : 'linear'}
+                domain={ogcLogit ? [-8, 8] : [-0.1, 1]}
+                ticks={
+                  ogcLogit
+                    ? [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999].map(logit)
+                    : []
+                }
+                tickFormatter={val =>
+                  ogcLogit ? toPercentage(sigmoid(val)) : toPercentage(val)
                 }
               />
-            )}
-            <Scatter
-              dataKey="omicron_rel"
-              fill="#8884d8"
-              fillOpacity={ogcOpacity['omicron_rel']}
-            />
-            <Scatter
-              dataKey="delta_rel"
-              fill="#bbb"
-              fillOpacity={0.25 * ogcOpacity['delta_rel']}
-            />
-            {ogcShowStrains && (
-              <Scatter
-                dataKey="ba1_rel"
-                fill="#005fa3"
-                opacity={0.9}
-                fillOpacity={ogcOpacity['ba1_rel']}
+              <ZAxis
+                dataKey="sum"
+                type="number"
+                range={phone ? [10, 80] : [30, 200]}
               />
-            )}
-            <Scatter
-              dataKey="ba2_rel"
-              fill="#f55a00"
-              opacity={0.9}
-              fillOpacity={ogcOpacity['ba2_rel']}
-            />
-            {ogcShowStrains && (
-              <>
-                <Line
-                  dataKey="ba2_rel_fit"
-                  dot={false}
-                  activeDot={false}
-                  stroke="#f55a00"
-                  strokeOpacity={ogcOpacity['ba2_rel_fit']}
-                />
-                <Scatter
-                  dataKey="ba3_rel"
-                  fill="#00994f"
-                  opacity={0.9}
-                  fillOpacity={ogcOpacity['ba3_rel']}
-                />
-              </>
-            )}
-            <Line
-              dataKey="fit"
-              dot={false}
-              activeDot={false}
-              stroke="#8884d8"
-              strokeOpacity={ogcOpacity['fit']}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-
-        <Paragraph
-          lineHeight={1.2}
-          maxWidth={1024}
-          paddingX={phone ? 8 : 64}
-          marginTop={phone ? 80 : 32}
-          textAlign={phone ? 'justify' : 'left'}
-          marginX="auto"
-        >
-          Dargestellt sind die relativen Häufigkeiten der Omikron Variante
-          (inkl. aller Subtypen) an den Gesamtinfektionen, wie vom RKI im Rahmen
-          der repräsentativen Surveillance berichtet. Die Größe der Kreise
-          repräsentiert die Anzahl der Sequenzierungen dieses Tages. <br />
-          Die durchgezogene Linie stellt die reine mathematische Modellierung
-          dieses Wachstums anhand einer Sigmoid-Funktion dar. Die Extrapolation
-          betrachtet keinerlei externe Faktoren.
-        </Paragraph>
-      </Card>
-
-      {/* Absolute Case Chart */}
-      <Card
-        elevation={3}
-        paddingY={16}
-        paddingX={phone ? 4 : 32}
-        margin={!phone ? 64 : undefined}
-        marginY={phone ? 32 : 64}
-      >
-        <Heading textAlign="center" size={500} marginBottom={32}>
-          Absoloute Fälle [pro Tag]
-        </Heading>
-
-        <Pane
-          display="flex"
-          justifyContent="flex-end"
-          alignItems="center"
-          flexDirection={phone ? 'column' : 'row'}
-        >
-          <Text
-            marginRight={!phone ? 16 : undefined}
-            marginBottom={phone ? 8 : undefined}
-          >
-            Projektion [Tage]
-          </Text>
-          <Tablist>
-            {[0, 7, 14, 21, 28].map(days => (
-              <Tab
-                key={days}
-                id={days}
-                onSelect={() => setAccForecastDays(days)}
-                isSelected={days === accForecastDays}
-              >
-                {days}
-              </Tab>
-            ))}
-          </Tablist>
-        </Pane>
-
-        <Pane
-          display="flex"
-          justifyContent={phone ? 'center' : 'flex-end'}
-          marginY={phone ? 8 : undefined}
-          alignItems="center"
-        >
-          <Checkbox
-            checked={accShowModeledCases}
-            onChange={e => setAccShowModeledCases(e.target.checked)}
-            label={<Text marginLeft={16}>Zeige Modellierung</Text>}
-          />
-        </Pane>
-
-        <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
-          <ComposedChart
-            width={800}
-            height={phone ? 400 : 500}
-            margin={{
-              top: 40,
-              right: phone ? 0 : 10,
-              bottom: 20,
-              left: phone ? 0 : 10,
-            }}
-            data={accData}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis
-              yAxisId="lefty"
-              label={
-                phone
-                  ? {
-                      value: 'Neuinf.',
-                      position: 'top',
-                      offset: 30,
-                    }
-                  : {
-                      value: 'Tägl. Neuinfektionen',
-                      position: 'left',
-                      angle: -90,
-                      offset: 20,
-                    }
-              }
-            ></YAxis>
-            <YAxis
-              yAxisId="righty"
-              orientation="right"
-              label={
-                phone
-                  ? {
-                      value: 'Inz.',
-                      position: 'top',
-                      offset: 30,
-                    }
-                  : {
-                      value: '7-Tage-Inzidenz',
-                      position: 'right',
-                      angle: 90,
-                    }
-              }
-            />
-            {phone && <ZAxis range={[15, 15]} />}
-            <ChartTooltip content={CustomTooltip('acc')} />
-            <Legend
-              layout="horizontal"
-              align="center"
-              verticalAlign="bottom"
-              formatter={val => {
-                return (
-                  val !== 'incidence_smoothed_fit' && (
+              <ChartTooltip content={CustomTooltip('ogc')} />
+              <Legend
+                layout={'horizontal'}
+                align="center"
+                verticalAlign="bottom"
+                wrapperStyle={{
+                  position: 'relative',
+                  paddingLeft: phone ? 30 : undefined,
+                }}
+                formatter={val => {
+                  return (
                     <Text
-                      opacity={accOpacity[val]}
+                      opacity={ogcOpacity[val]}
                       color="inherit"
                       cursor="pointer"
                     >
-                      {accLabelMap[val] || val}
+                      {ogcLabelMap[val] || val}
                     </Text>
-                  )
-                );
-              }}
-              onClick={accHandleClick}
-              onMouseEnter={accHandleMouseEnter}
-              onMouseLeave={accHandleMouseLeave}
-            />
-            {todayStr && (
-              <ReferenceLine
-                x={todayStr}
-                stroke="black"
-                strokeWidth={2}
-                strokeOpacity={
-                  accData[accData.length - 1].date > todayStr ? 0.25 : 0
-                }
-                strokeDasharray={'15 5'}
-                label={
-                  accData[accData.length - 1].date > todayStr
-                    ? { value: 'Heute', position: 'top', opacity: 0.25 }
-                    : ''
-                }
-                yAxisId="lefty"
+                  );
+                }}
+                onClick={ogcHandleClick}
+                onMouseEnter={ogcHandleMouseEnter}
+                onMouseLeave={ogcHandleMouseLeave}
               />
-            )}
-            {todayStr && (
-              <ReferenceLine
-                stroke="orange"
-                strokeWidth={3}
-                strokeOpacity={accForecastDays > 0 ? 1 : 0}
-                label={
-                  accForecastDays > 0
-                    ? {
-                        value: 'Extrapolation',
-                        position: 'top',
-                        fill: 'orange',
-                      }
-                    : ''
-                }
-                segment={[
-                  { x: props.aggData[props.aggData.length - 1].date, y: 0 },
-                  { x: accData[accData.length - 1].date, y: 0 },
-                ]}
-                yAxisId="lefty"
+              {todayStr && (
+                <ReferenceLine
+                  x={todayStr}
+                  stroke="black"
+                  strokeWidth={2}
+                  strokeOpacity={ogcFit ? 0.25 : 0}
+                  strokeDasharray={'15 5'}
+                  label={
+                    ogcFit
+                      ? {
+                          value: `Heute (${(() => {
+                            const d = ogcData.find(
+                              d => todayStr === d.date,
+                            )?.fit;
+                            return toPercentage(ogcLogit ? sigmoid(d) : d);
+                          })()})`,
+                          position: 'top',
+                          opacity: 0.25,
+                        }
+                      : ''
+                  }
+                />
+              )}
+              <Scatter
+                dataKey="omicron_rel"
+                fill="#8884d8"
+                fillOpacity={ogcOpacity['omicron_rel']}
               />
-            )}
-            <Scatter
-              dataKey="omicron_abs"
-              fill="#8884d8"
-              size
-              fillOpacity={accOpacity['omicron_abs']}
-              yAxisId="lefty"
-            />
-            <Scatter
-              dataKey="delta_abs"
-              fill="#dbbe00"
-              fillOpacity={accOpacity['delta_abs']}
-              yAxisId="lefty"
-            />
-            <Scatter
-              dataKey="new_cases_smoothed"
-              fill="#700036"
-              fillOpacity={accOpacity['new_cases_smoothed']}
-              yAxisId="lefty"
-            />
-            {accShowModeledCases && (
-              <>
-                <Line
-                  dataKey="omicron_abs_fit"
-                  dot={false}
-                  activeDot={false}
-                  stroke="#8884d8"
-                  strokeOpacity={accOpacity['omicron_abs_fit']}
-                  yAxisId="lefty"
+              <Scatter
+                dataKey="delta_rel"
+                fill="#bbb"
+                fillOpacity={0.25 * ogcOpacity['delta_rel']}
+              />
+              {ogcShowStrains && (
+                <Scatter
+                  dataKey="ba1_rel"
+                  fill="#005fa3"
+                  opacity={0.9}
+                  fillOpacity={ogcOpacity['ba1_rel']}
                 />
-                <Line
-                  dataKey="delta_abs_fit"
-                  dot={false}
-                  activeDot={false}
-                  stroke="#dbbe00"
-                  strokeOpacity={accOpacity['delta_abs_fit']}
-                  yAxisId="lefty"
-                />
-                <Line
-                  dataKey="new_cases_smoothed_fit"
-                  dot={false}
-                  activeDot={false}
-                  strokeWidth={phone ? 2 : 3}
-                  stroke="#700036"
-                  strokeOpacity={accOpacity['new_cases_smoothed_fit']}
-                  yAxisId="lefty"
-                />
-              </>
-            )}
-            <Scatter
-              dataKey="incidence_smoothed_fit"
-              fill="#700036"
-              fillOpacity={0}
-              legendType="none"
-              yAxisId="righty"
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </Card>
+              )}
+              <Scatter
+                dataKey="ba2_rel"
+                fill="#f55a00"
+                opacity={0.9}
+                fillOpacity={ogcOpacity['ba2_rel']}
+              />
+              {ogcShowStrains && (
+                <>
+                  <Line
+                    dataKey="ba2_rel_fit"
+                    dot={false}
+                    activeDot={false}
+                    stroke="#f55a00"
+                    strokeOpacity={ogcOpacity['ba2_rel_fit']}
+                  />
+                  <Scatter
+                    dataKey="ba3_rel"
+                    fill="#00994f"
+                    opacity={0.9}
+                    fillOpacity={ogcOpacity['ba3_rel']}
+                  />
+                </>
+              )}
+              <Line
+                dataKey="fit"
+                dot={false}
+                activeDot={false}
+                stroke="#8884d8"
+                strokeOpacity={ogcOpacity['fit']}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
 
-      <Card
-        elevation={3}
-        paddingY={16}
-        paddingX={phone ? 4 : 32}
-        margin={!phone ? 64 : undefined}
-        marginY={phone ? 32 : 64}
-      >
-        <Heading textAlign="center" size={500} marginBottom={32}>
-          Bullets
-        </Heading>
+          <Paragraph
+            lineHeight={1.2}
+            maxWidth={1024}
+            paddingX={phone ? 8 : 64}
+            marginTop={phone ? 80 : 32}
+            textAlign={phone ? 'justify' : 'left'}
+            marginX="auto"
+          >
+            Dargestellt sind die relativen Häufigkeiten der Omikron Variante
+            (inkl. aller Subtypen) an den Gesamtinfektionen, wie vom RKI im
+            Rahmen der repräsentativen Surveillance berichtet. Die Größe der
+            Kreise repräsentiert die Anzahl der Sequenzierungen dieses Tages.{' '}
+            <br />
+            Die durchgezogene Linie stellt die reine mathematische Modellierung
+            dieses Wachstums anhand einer Sigmoid-Funktion dar. Die
+            Extrapolation betrachtet keinerlei externe Faktoren.
+          </Paragraph>
+        </Card>
 
-        <Pane
-          display="flex"
-          justifyContent="space-evenly"
-          alignItems={phone ? 'stretch' : 'center'}
-          flexWrap={!phone ? 'wrap' : undefined}
-          flexDirection={phone ? 'column' : 'row'}
-          paddingX={phone ? 16 : undefined}
+        {/* Absolute Case Chart */}
+        <Card
+          elevation={3}
+          paddingY={16}
+          paddingX={phone ? 4 : 32}
+          margin={!phone ? 64 : undefined}
+          marginY={phone ? 32 : 64}
         >
-          {props.sdps.map(sdp => (
-            <Card
-              key={sdp.label}
-              elevation={1}
-              paddingX={16}
-              paddingY={8}
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              flexBasis="26%"
-              position="relative"
-              marginBottom={phone ? 16 : 8}
-            >
-              <Heading
-                is="h4"
-                textAlign="center"
-                size={500}
-                fontWeight="normal"
-              >
-                {sdp.label}
-              </Heading>
-              <Heading 
-                is="span" 
-                marginY={16} 
-                size={900}
-                position='relative'
-              >
-                {sdp.value}
-                {sdp.change && (
-                  <Text
-                    size={300}
-                    opacity={0.6}
-                    position='absolute'
-                    top={0}
-                    right={-8}
-                    transform='translateX(100%)'
-                  >
-                    {sdp.change}
-                  </Text>
-                )}
-              </Heading>
-              <Tooltip content={sdp.hint}>
-                <InfoSignIcon
-                  size={12}
-                  position="absolute"
-                  top="50%"
-                  right={14}
-                  transform="translateY(-50%)"
-                />
-              </Tooltip>
-            </Card>
-          ))}
-        </Pane>
-      </Card>
+          <Heading textAlign="center" size={500} marginBottom={32}>
+            Absoloute Fälle [pro Tag]
+          </Heading>
 
-      <Pane margin={!phone ? 64 : undefined} paddingX={phone ? 4 : 0}>
-        <Heading>Quellen</Heading>
-        <Text display="block">
-          <a
-            href="https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland"
-            target="_blank"
-            rel="noreferrer"
+          <Pane
+            display="flex"
+            justifyContent="flex-end"
+            alignItems="center"
+            flexDirection={phone ? 'column' : 'row'}
           >
-            https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland
-          </a>
-        </Text>
-        <Text display="block">
-          <a
-            href="https://github.com/owid/covid-19-data/tree/master/public/data"
-            target="_blank"
-            rel="noreferrer"
+            <Text
+              marginRight={!phone ? 16 : undefined}
+              marginBottom={phone ? 8 : undefined}
+            >
+              Projektion [Tage]
+            </Text>
+            <Tablist>
+              {[0, 7, 14, 21, 28].map(days => (
+                <Tab
+                  key={days}
+                  id={days}
+                  onSelect={() => setAccForecastDays(days)}
+                  isSelected={days === accForecastDays}
+                >
+                  {days}
+                </Tab>
+              ))}
+            </Tablist>
+          </Pane>
+
+          <Pane
+            display="flex"
+            justifyContent={phone ? 'center' : 'flex-end'}
+            marginY={phone ? 8 : undefined}
+            alignItems="center"
           >
-            https://github.com/owid/covid-19-data/tree/master/public/data
-          </a>
-        </Text>
+            <Checkbox
+              checked={accShowModeledCases}
+              onChange={e => setAccShowModeledCases(e.target.checked)}
+              label={<Text marginLeft={16}>Zeige Modellierung</Text>}
+            />
+          </Pane>
+
+          <ResponsiveContainer width="100%" height={phone ? 400 : 500}>
+            <ComposedChart
+              width={800}
+              height={phone ? 400 : 500}
+              margin={{
+                top: 40,
+                right: phone ? 0 : 10,
+                bottom: 20,
+                left: phone ? 0 : 10,
+              }}
+              data={accData}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis
+                yAxisId="lefty"
+                label={
+                  phone
+                    ? {
+                        value: 'Neuinf.',
+                        position: 'top',
+                        offset: 30,
+                      }
+                    : {
+                        value: 'Tägl. Neuinfektionen',
+                        position: 'left',
+                        angle: -90,
+                        offset: 20,
+                      }
+                }
+              ></YAxis>
+              <YAxis
+                yAxisId="righty"
+                orientation="right"
+                label={
+                  phone
+                    ? {
+                        value: 'Inz.',
+                        position: 'top',
+                        offset: 30,
+                      }
+                    : {
+                        value: '7-Tage-Inzidenz',
+                        position: 'right',
+                        angle: 90,
+                      }
+                }
+              />
+              {phone && <ZAxis range={[15, 15]} />}
+              <ChartTooltip content={CustomTooltip('acc')} />
+              <Legend
+                layout="horizontal"
+                align="center"
+                verticalAlign="bottom"
+                formatter={val => {
+                  return (
+                    val !== 'incidence_smoothed_fit' && (
+                      <Text
+                        opacity={accOpacity[val]}
+                        color="inherit"
+                        cursor="pointer"
+                      >
+                        {accLabelMap[val] || val}
+                      </Text>
+                    )
+                  );
+                }}
+                onClick={accHandleClick}
+                onMouseEnter={accHandleMouseEnter}
+                onMouseLeave={accHandleMouseLeave}
+              />
+              {todayStr && (
+                <ReferenceLine
+                  x={todayStr}
+                  stroke="black"
+                  strokeWidth={2}
+                  strokeOpacity={
+                    accData[accData.length - 1].date > todayStr ? 0.25 : 0
+                  }
+                  strokeDasharray={'15 5'}
+                  label={
+                    accData[accData.length - 1].date > todayStr
+                      ? { value: 'Heute', position: 'top', opacity: 0.25 }
+                      : ''
+                  }
+                  yAxisId="lefty"
+                />
+              )}
+              {todayStr && (
+                <ReferenceLine
+                  stroke="orange"
+                  strokeWidth={3}
+                  strokeOpacity={accForecastDays > 0 ? 1 : 0}
+                  label={
+                    accForecastDays > 0
+                      ? {
+                          value: 'Extrapolation',
+                          position: 'top',
+                          fill: 'orange',
+                        }
+                      : ''
+                  }
+                  segment={[
+                    { x: props.aggData[props.aggData.length - 1].date, y: 0 },
+                    { x: accData[accData.length - 1].date, y: 0 },
+                  ]}
+                  yAxisId="lefty"
+                />
+              )}
+              <Scatter
+                dataKey="omicron_abs"
+                fill="#8884d8"
+                size
+                fillOpacity={accOpacity['omicron_abs']}
+                yAxisId="lefty"
+              />
+              <Scatter
+                dataKey="delta_abs"
+                fill="#dbbe00"
+                fillOpacity={accOpacity['delta_abs']}
+                yAxisId="lefty"
+              />
+              <Scatter
+                dataKey="new_cases_smoothed"
+                fill="#700036"
+                fillOpacity={accOpacity['new_cases_smoothed']}
+                yAxisId="lefty"
+              />
+              {accShowModeledCases && (
+                <>
+                  <Line
+                    dataKey="omicron_abs_fit"
+                    dot={false}
+                    activeDot={false}
+                    stroke="#8884d8"
+                    strokeOpacity={accOpacity['omicron_abs_fit']}
+                    yAxisId="lefty"
+                  />
+                  <Line
+                    dataKey="delta_abs_fit"
+                    dot={false}
+                    activeDot={false}
+                    stroke="#dbbe00"
+                    strokeOpacity={accOpacity['delta_abs_fit']}
+                    yAxisId="lefty"
+                  />
+                  <Line
+                    dataKey="new_cases_smoothed_fit"
+                    dot={false}
+                    activeDot={false}
+                    strokeWidth={phone ? 2 : 3}
+                    stroke="#700036"
+                    strokeOpacity={accOpacity['new_cases_smoothed_fit']}
+                    yAxisId="lefty"
+                  />
+                </>
+              )}
+              <Scatter
+                dataKey="incidence_smoothed_fit"
+                fill="#700036"
+                fillOpacity={0}
+                legendType="none"
+                yAxisId="righty"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card
+          elevation={3}
+          paddingY={16}
+          paddingX={phone ? 4 : 32}
+          margin={!phone ? 64 : undefined}
+          marginY={phone ? 32 : 64}
+        >
+          <Heading textAlign="center" size={500} marginBottom={32}>
+            Bullets
+          </Heading>
+
+          <Pane
+            display="flex"
+            justifyContent="space-evenly"
+            alignItems={phone ? 'stretch' : 'center'}
+            flexWrap={!phone ? 'wrap' : undefined}
+            flexDirection={phone ? 'column' : 'row'}
+            paddingX={phone ? 16 : undefined}
+          >
+            {props.sdps.map(sdp => (
+              <Card
+                key={sdp.label}
+                elevation={1}
+                paddingX={16}
+                paddingY={8}
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                flexBasis="26%"
+                position="relative"
+                marginBottom={phone ? 16 : 8}
+              >
+                <Heading
+                  is="h4"
+                  textAlign="center"
+                  size={500}
+                  fontWeight="normal"
+                >
+                  {sdp.label}
+                </Heading>
+                <Heading is="span" marginY={16} size={900} position="relative">
+                  {sdp.value}
+                  {sdp.change && (
+                    <Text
+                      size={300}
+                      opacity={0.6}
+                      position="absolute"
+                      top={0}
+                      right={-8}
+                      transform="translateX(100%)"
+                    >
+                      {sdp.change}
+                    </Text>
+                  )}
+                </Heading>
+                <Tooltip content={sdp.hint}>
+                  <InfoSignIcon
+                    size={12}
+                    position="absolute"
+                    top="50%"
+                    right={14}
+                    transform="translateY(-50%)"
+                  />
+                </Tooltip>
+              </Card>
+            ))}
+          </Pane>
+        </Card>
+
+        <Pane margin={!phone ? 64 : undefined} paddingX={phone ? 4 : 0}>
+          <Heading>Quellen</Heading>
+          <Text display="block">
+            <a
+              href="https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland"
+              target="_blank"
+              rel="noreferrer"
+            >
+              https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland
+            </a>
+          </Text>
+          <Text display="block">
+            <a
+              href="https://github.com/owid/covid-19-data/tree/master/public/data"
+              target="_blank"
+              rel="noreferrer"
+            >
+              https://github.com/owid/covid-19-data/tree/master/public/data
+            </a>
+          </Text>
+        </Pane>
       </Pane>
-    </Pane>
+    </>
   );
 }
 
