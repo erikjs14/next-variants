@@ -216,11 +216,15 @@ def get_diff_str(after, before, round_to=2):
 
 # load yesterday's sdps
 try:
+    print('trying to open')
     yesterday_str = (date.today() + timedelta(-1)).strftime('%Y-%m-%d')
     with open(f'./data/historic/sdps/{yesterday_str}.json', 'r') as f:
         sdps_yesterday = json.load(f)
 except:
     sdps_yesterday = None
+    print('exception')
+    
+print({'1': yesterday_str, '2': sdps_yesterday})
 
 # Reproduction Rate alltogether
 label = 'R-Wert (' + str(owid_data_ger[['date', 'reproduction_rate']].dropna().iloc[-1].date) + ')'
