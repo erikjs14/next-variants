@@ -11,6 +11,7 @@ import {
   Button,
   Position,
   Pane,
+  SelectMenu,
 } from 'evergreen-ui';
 
 export default function Home(props) {
@@ -49,7 +50,7 @@ export default function Home(props) {
         marginX={!phone ? 64 : undefined}
         marginTop={phone ? 16 : undefined}
       >
-        <Popover
+        {/* <Popover
           position={Position.BOTTOM_RIGHT}
           content={
             <Menu>
@@ -65,7 +66,17 @@ export default function Home(props) {
           }
         >
           <Button marginRight={16}>Archiv</Button>
-        </Popover>
+        </Popover> */}
+        <SelectMenu
+          title="Select"
+          options={props.dates.map(date => ({ label: date, value: date }))}
+          selected={null}
+          hasFilter={false}
+          hasTitle={false}
+          onSelect={date => router.push(`/archive/${date.value}`)}
+        >
+          <Button marginRight={16}>Archiv</Button>
+        </SelectMenu>
       </Pane>
       <Analytics {...props} phone={phone} />;
     </>

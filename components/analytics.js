@@ -12,7 +12,6 @@ import {
   Tab,
   Checkbox,
   Paragraph,
-  Alert,
 } from 'evergreen-ui';
 import {
   CartesianGrid,
@@ -27,8 +26,6 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
-import Image from 'next/image';
-import Head from 'next/head';
 
 const logit = x => {
   const result = Math.log(x / (1 - x));
@@ -53,15 +50,19 @@ export default function Analytics(props) {
 
   const [todayStr, setTodayStr] = useState(null);
   useEffect(() => {
-    const d = new Date();
-    setTodayStr(
-      d.getFullYear() +
-        '-' +
-        (d.getMonth() + 1).toString().padStart(2, '0') +
-        '-' +
-        d.getDate().toString().padStart(2, '0'),
-    );
-  }, []);
+    if (props.archive) {
+      setTodayStr(props.archive);
+    } else {
+      const d = new Date();
+      setTodayStr(
+        d.getFullYear() +
+          '-' +
+          (d.getMonth() + 1).toString().padStart(2, '0') +
+          '-' +
+          d.getDate().toString().padStart(2, '0'),
+      );
+    }
+  }, [props.archive]);
 
   const ogcData = useMemo(
     () =>
@@ -84,7 +85,10 @@ export default function Analytics(props) {
                     new Date(
                       props.aggData[props.aggData.length - 1].date,
                     ).getTime() &&
-                  new Date(d.date).getTime() <= new Date().getTime(),
+                  new Date(d.date).getTime() <=
+                    (props.archive
+                      ? new Date(props.archive).getTime()
+                      : new Date().getTime()),
               ),
         )
         .map(d => ({
@@ -453,7 +457,7 @@ export default function Analytics(props) {
               />
               {todayStr && (
                 <ReferenceLine
-                  x={props.archive || todayStr}
+                  x={todayStr}
                   stroke="black"
                   strokeWidth={2}
                   strokeOpacity={ogcFit ? 0.25 : 0}
@@ -461,7 +465,7 @@ export default function Analytics(props) {
                   label={
                     ogcFit
                       ? {
-                          value: `Heute (${(() => {
+                          value: `${props.archive || 'Heute'} (${(() => {
                             const d = ogcData.find(
                               d => todayStr === d.date,
                             )?.fit;
@@ -668,7 +672,7 @@ export default function Analytics(props) {
               />
               {todayStr && (
                 <ReferenceLine
-                  x={props.archive || todayStr}
+                  x={todayStr}
                   stroke="black"
                   strokeWidth={2}
                   strokeOpacity={
@@ -677,7 +681,11 @@ export default function Analytics(props) {
                   strokeDasharray={'15 5'}
                   label={
                     accData[accData.length - 1].date > todayStr
-                      ? { value: 'Heute', position: 'top', opacity: 0.25 }
+                      ? {
+                          value: `${props.archive || 'Heute'}`,
+                          position: 'top',
+                          opacity: 0.25,
+                        }
                       : ''
                   }
                   yAxisId="lefty"

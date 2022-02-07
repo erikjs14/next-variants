@@ -9,6 +9,7 @@ import {
   Text,
   Button,
   UndoIcon,
+  SelectMenu,
 } from 'evergreen-ui';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -64,12 +65,22 @@ export default function Archive(props) {
         marginBottom={phone ? -16 : -32}
         marginTop={16}
         display="flex"
-        justifyContent="flex-end"
+        justifyContent="space-between"
         marginX={!phone ? 64 : undefined}
       >
         <Button iconBefore={UndoIcon} onClick={() => router.push('/')}>
           Zurück zu Heute
         </Button>
+        <SelectMenu
+          title="Select"
+          options={props.dates.map(date => ({ label: date, value: date }))}
+          selected={props.archiveDate}
+          hasFilter={false}
+          hasTitle={false}
+          onSelect={date => router.push(`/archive/${date.value}`)}
+        >
+          <Button marginRight={16}>Archiv</Button>
+        </SelectMenu>
       </Pane>
       <Analytics {...props} archive={props.archiveDate} phone={phone} />;
     </>
@@ -113,6 +124,8 @@ export async function getStaticProps(context) {
     fs.readFileSync(`data/historic/${context.params.date}/sdps.json`),
   );
 
+  const dates = fs.readdirSync('data/historic');
+
   return {
     props: {
       aggData,
@@ -122,6 +135,7 @@ export async function getStaticProps(context) {
       sdps,
       projection,
       archiveDate: context.params.date,
+      dates,
     },
   };
 }
