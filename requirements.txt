@@ -1,6 +1,7 @@
 numpy
 pandas
 scipy
+pytz
 matplotlib
 ipykernel
 nbconvert
