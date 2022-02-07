@@ -64,7 +64,7 @@ export default function Home(props) {
             </Menu>
           }
         >
-          <Button marginRight={16}>Archive</Button>
+          <Button marginRight={16}>Archiv</Button>
         </Popover>
       </Pane>
       <Analytics {...props} phone={phone} />;

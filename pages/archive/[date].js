@@ -50,8 +50,14 @@ export default function Archive(props) {
         marginX={4}
         marginTop={32}
       >
-        <Alert intent="none" title="This is an archive page" paddingRight={64}>
-          <Text>This page shows data as of {props.archiveDate}.</Text>
+        <Alert
+          intent="none"
+          title="Diese Seite ist eine Archivseite"
+          paddingRight={64}
+        >
+          <Text>
+            Hier werden die Daten angezeigt, wie vom {props.archiveDate}.
+          </Text>
         </Alert>
       </Pane>
       <Pane
