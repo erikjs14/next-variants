@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 import os
 import pytz
 
-first_date_str = '2022-02-01'
+first_date_str = '2021-12-01'
 today = datetime.now(pytz.timezone('Europe/Berlin'))
 
 cur_date = datetime.strptime(first_date_str, '%Y-%m-%d').date()
